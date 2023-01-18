@@ -19,14 +19,14 @@ gsl_path=/usr/local/include/gsl #for my laptop
 #---------------------------------------------#
 #              Simulation settings            #
 #---------------------------------------------#
-Size=48
+Size=18
 t_min=0.40
 t_max=1.1
 number_of_PT_replicas=20
 number_of_real_replicas=10
 PT_flag=1
 number_of_PT_step=64
-power_of_iterations=20      #the real number of iteration will be (2^number_of_iteration)/number_of_PT_step
+power_of_iterations=16      #the real number of iteration will be (2^number_of_iteration)/number_of_PT_step
 number_of_iterations=$((2**$power_of_iterations/$number_of_PT_step))
 print_config=4		                            #configurations will be printed every 
 						    #$print_config * $number_of_PT_step steps
@@ -167,7 +167,7 @@ echo "# °°°°          °°°°°°  °° °°  °°°°°°   °°°°°°°
 echo "#    °°°°°      °°°°°°    °    °°°°°°   °°°°°°°°°°°              °°°°°°      #"
 echo "#       °°°°°   °°°°°°         °°°°°°   °°°°°      °°°°°         °°°°°°      #"
 echo "#     °°°°°°    °°°°°°         °°°°°°   °°°°°      °°°°°         °°°°°°      #"
-echo "# °°°°°°°       °°°°°°         °°°°°°   °°°°°       °°°°         °°°°°°      #"
+echo "# °°°°°°°       °°°°°°         °°°°°° a °°°°°       °°°°         °°°°°°      #"
 echo "##############################################################################"
 
 
