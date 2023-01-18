@@ -26,7 +26,7 @@ number_of_PT_replicas=20
 number_of_real_replicas=10
 PT_flag=1
 number_of_PT_step=64
-power_of_iterations=16      #the real number of iteration will be (2^number_of_iteration)/number_of_PT_step
+power_of_iterations=15      #the real number of iteration will be (2^number_of_iteration)/number_of_PT_step
 number_of_iterations=$((2**$power_of_iterations/$number_of_PT_step))
 print_config=4		                            #configurations will be printed every 
 						    #$print_config * $number_of_PT_step steps
@@ -38,9 +38,9 @@ print_config=4		                            #configurations will be printed ever
 if [ "$PT_flag" == "1" ]; then
 	#echo "Warning: you have chosen PT_flag=1 but you are not printing all configurations..."
 	#echo "Setting iter_start_print = 0"
-	iter_start_print=0
-elif [ "$PT_flag" == "0" ]; then
 	iter_start_print=$number_of_iterations/2
+elif [ "$PT_flag" == "0" ]; then
+	iter_start_print=0
 else 
 	echo "PT_flag has an invalid value. Exiting."
 	exit 1
@@ -151,12 +151,12 @@ fi
 
 clear
 echo "##############################################################################"
-echo "#  °°°°°°°      °°°°°°°°     °°°°°°°°   °°°°°°°°°°°°°°      °°°°°°°°°°°°°°°° #"
-echo "# °°°°          °°°°°°°°°   °°°°°°°°°   °°°°°      °°°°     °°°°°°°°°°°°°°°° #"
-echo "# °°°°          °°°°°°  °° °°  °°°°°°   °°°°°°°°°°°°°            °°°°°°      #"
-echo "#    °°°°°      °°°°°°    °    °°°°°°   °°°°°°°°°°°              °°°°°°      #"
-echo "#       °°°°°   °°°°°°         °°°°°°   °°°°°      °°°°°         °°°°°°      #"
-echo "#     °°°°°°    °°°°°°         °°°°°°   °°°°°      °°°°°         °°°°°°      #"
+echo "#  °°°°°°°      °°°°°°°°     °°°°°°°° a °°°°°°°°°°°°°°      °°°°°°°°°°°°°°°° #"
+echo "# °°°°          °°°°°°°°°   °°°°°°°°° a °°°°°      °°°°     °°°°°°°°°°°°°°°° #"
+echo "# °°°°          °°°°°°  °° °°  °°°°°° a °°°°°°°°°°°°°            °°°°°°      #"
+echo "#    °°°°°      °°°°°°    °    °°°°°° a °°°°°°°°°°°              °°°°°°      #"
+echo "#       °°°°°   °°°°°°         °°°°°° a °°°°°      °°°°°         °°°°°°      #"
+echo "#     °°°°°°    °°°°°°         °°°°°° a °°°°°      °°°°°         °°°°°°      #"
 echo "# °°°°°°°       °°°°°°         °°°°°° a °°°°°       °°°°         °°°°°°      #"
 echo "##############################################################################"
 
@@ -208,6 +208,8 @@ echo "$number_of_iterations" >> $path/analysis_input.info
 echo "$iter_start_print" >> $path/analysis_input.info
 echo "$number_of_PT_replicas" >> $path/analysis_input.info
 echo "$PT_flag" >> $path/analysis_input.info
+echo "$print_config" >> $path/analysis_input.info
+
 
 #---------------------------------------------#
 
