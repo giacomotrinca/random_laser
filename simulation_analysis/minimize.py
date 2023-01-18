@@ -1,19 +1,18 @@
 import tensorflow as tf
-
+import math
 # Define the function f(x) and its constraints g(x)
 def f(x):
-    return x**3 - 6*x**2 + 4*x + 12
+    return x[0]**2 + x[1]**2
 
-def g(x):
-    return x
+
 
 #define boundaries
 min_bound = 2.
-max_bound = 3.
+max_bound = 6.
 
 #tuning parameters
-learning_rate = 1e-4
-tol = 1e-5
+learning_rate = 1e-6
+tol = 1e-7
 
 # Define the optimizer
 optimizer = tf.optimizers.Adam(learning_rate=learning_rate)
@@ -22,11 +21,11 @@ optimizer = tf.optimizers.Adam(learning_rate=learning_rate)
 x = tf.Variable(2.1)
 
 # Define the constraint
-constraint = tf.math.logical_and(g(x) >= min_bound, g(x) <= max_bound)
+#constraint = tf.math.logical_and(g(x) >= min_bound, g(x) <= max_bound)
 
 # Define the constraint as a function of x
-def constraint_fn(x):
-    return tf.math.logical_and(g(x) >= min_bound, g(x) <= max_bound)
+#def constraint_fn(x):
+#    return tf.math.logical_and(g(x) >= min_bound, g(x) <= max_bound)
 
 # Define the optimization objective
 @tf.function
@@ -45,7 +44,7 @@ for step in range(10000000):
     point = ob[2]
     gr = ob[1]
     tf.debugging.check_numerics(loss_value, message='Loss is inf or nan.')
-    tf.Assert(constraint_fn(x), [x])
+    #tf.Assert(constraint_fn(x), [x])
     if step % 10 == 0:
         print(f'[{step}] -> Loss = {loss_value:.4e} \tPoint = {point:.4e}\tgrad = {gr:.4e}')
     if abs(gr) <= tol:
