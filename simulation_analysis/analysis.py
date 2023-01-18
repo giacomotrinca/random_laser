@@ -17,7 +17,7 @@ import kullback
 gpu_devices = tf.config.experimental.list_physical_devices('GPU')
 
 only_kld = 1
-overlap_scatter = 0
+overlap_scatter = 1
 
 #eq = 1 PT, eq = 0 NO PT
 os.system("clear")
