@@ -7,7 +7,6 @@ def f(x):
 def g(x):
     return x
 
-
 #define boundaries
 min_bound = 2.
 max_bound = 6.
