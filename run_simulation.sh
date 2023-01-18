@@ -104,8 +104,9 @@ if [ "$1" == "man" ]; then
 fi
 
 if [ "$1" == "--help" ] || [ "$1" == "-h" ] || [ -z "$1" ]; then
-	echo "Usage:"
-	echo "./run_simulation.sh index_of_GPU initial_sample number_of_samples"
+	echo -e "\033[31mUsage\033[0m"
+	echo -e "\033[31m./run_simulation.sh index_of_GPU initial_sample number_of_samples\033[0m"
+	#echo "./run_simulation.sh index_of_GPU initial_sample number_of_samples"
 	echo "List of argument accepted:"
 	echo " "
 	echo "--version or -v"
