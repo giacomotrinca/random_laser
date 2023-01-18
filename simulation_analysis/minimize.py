@@ -9,17 +9,17 @@ def g(x):
 
 #define boundaries
 min_bound = 2.
-max_bound = 6.
+max_bound = 3.
 
 #tuning parameters
 learning_rate = 1e-4
-tol = 1e-7
+tol = 1e-5
 
 # Define the optimizer
 optimizer = tf.optimizers.Adam(learning_rate=learning_rate)
 
 # Define a variable for the input to the function
-x = tf.Variable(3.)
+x = tf.Variable(2.1)
 
 # Define the constraint
 constraint = tf.math.logical_and(g(x) >= min_bound, g(x) <= max_bound)
