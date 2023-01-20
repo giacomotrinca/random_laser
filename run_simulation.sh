@@ -1,6 +1,7 @@
 #!/bin/bash
 
-
+############
+# SETTINGS #
 #---------------------------------------------#
 #             GPU architecture                #
 #---------------------------------------------#
@@ -24,20 +25,33 @@ t_min=0.40
 t_max=1.1
 number_of_PT_replicas=20
 number_of_real_replicas=10
-PT_flag=1
+PT_flag=0
 number_of_PT_step=64
-power_of_iterations=15      #the real number of iteration will be (2^number_of_iteration)/number_of_PT_step
+power_of_iterations=15   
+print_config=4	   
+frequency_mode=3
+
+#Size -> Number of modes of our system
+#t_min, t_max -> temperature range of our system. Run "./run_simulation.sh man" for further informations
+#number_of_PT_replicas -> number of temperatures between t_min and t_max. They will be linespaced.
+#number_of_real_replicas -> number of independent replicas of the system.
+#PT_flag -> flag for the parallel exchange algorithm. If you want to look only at the equilibrium properties
+#			it should be 1, otherwise it shoud be 0. 
+#number_of_PT_step -> How often the exchange between two nearby replicas in energy is proposed, in Monte Carlo iterations.
+#power_of_iteration -> We use the convention of inputting two raised to the power of the number of iterations we want to run our Monte Carlo simulation for.
+#the real number of iteration will be (2^power_of_iteration)/number_of_PT_step
 number_of_iterations=$((2**$power_of_iterations/$number_of_PT_step))
-print_config=4		                            #configurations will be printed every 
-						    #$print_config * $number_of_PT_step steps
-						    
-#iter_start_print=$number_of_iterations/2	    #typical values= 0, 
-						    #$number_of_iterations/2, $number_of_iteration/4
-			                            #if PT_flag = 1 then iter_start_print should be 
-			                            #different from zero
+#print_config -> How often the configuration is printed, in PT_steps.
+#frequency_mode -> Indicates how the frequencies are generated. If this parameter is 1, the frequencies are taken from an input file (yet to be implemented), 
+				   #if it is two, the frequencies are generated "comb-like" between 0 and the DW parameter (see further on),
+				   #while if it is 3, the frequencies are generated uniformly between 0 and DW.
+
+
+
+###################################################
+# DO NOT EDIT THIS PART OR DO IT AT YOUR OWN RISK #
+###################################################
 if [ "$PT_flag" == "1" ]; then
-	#echo "Warning: you have chosen PT_flag=1 but you are not printing all configurations..."
-	#echo "Setting iter_start_print = 0"
 	iter_start_print=$(($number_of_iterations/2))
 elif [ "$PT_flag" == "0" ]; then
 	iter_start_print=0
@@ -48,9 +62,7 @@ fi
 		                            
 print_all=0
 frequency_bandwidth=1.
-frequency_mode=3	    #if its 1 -> combliek frequencies
-			    #if it's 2 -> list of frequencies loaded from file (to be implemented)
-			   #if it's 3 -> random frequencies taken from 0 to $frequency_bandwidth
+	    
 ntjumps=$((number_of_PT_replicas -1))
 #flags for resume protocol (BETA)
 backup_flag=0
@@ -86,13 +98,6 @@ resume=0    #check the last sample by looking
             # at simulation.info file
 
 
-
-
-
-
-
-
-# DO NOT EDIT THIS PART OF THE SCRIPT
 #---------------------------------------------#
 #             some useful argument            #
 #---------------------------------------------#
