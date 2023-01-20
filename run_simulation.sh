@@ -38,7 +38,7 @@ print_config=4		                            #configurations will be printed ever
 if [ "$PT_flag" == "1" ]; then
 	#echo "Warning: you have chosen PT_flag=1 but you are not printing all configurations..."
 	#echo "Setting iter_start_print = 0"
-	iter_start_print=$number_of_iterations/2
+	iter_start_print=$(($number_of_iterations/2))
 elif [ "$PT_flag" == "0" ]; then
 	iter_start_print=0
 else 
