@@ -9,18 +9,5 @@ def find_PT(string):
         return True
     else:
         return False
-Size=18
-devices = 1
-for device in range(0, devices):
-	path=f'N{Size}/DEV{device}'
-	directories = list_directories(path)
-	#print(directories)
 
-	for d in directories:
-		path_d = f'{path}/{d}'
-		directory = list_directories(path_d)
 
-		if find_PT(d):
-			print(f'{path_d} is a Parallel Tempering Simulation')
-		else:
-			print(f'{path_d} is a Dynamical Simulation')
