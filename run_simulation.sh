@@ -182,7 +182,7 @@ number_of_samples=$3
 
 
 #computing the number of last sample
-sample_end=$[ $number_of_samples + $sample_init -1 ]
+sample_end=$(($number_of_samples + $sample_init -1)) 
 
 
 
