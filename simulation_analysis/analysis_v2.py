@@ -15,6 +15,8 @@ for dev in devices:
     simulations = loadingModule.list_directories(f'N{N}/{dev}') 
     for sim in simulations:     
         samples = loadingModule.list_directories(f'N{N}/{dev}/{sim}')
+        options = loadingModule.load_settings(f'N{N}/{dev}/{sim}')
+        loadingModule.print_settings(options)
         for sample in samples:
             print(f'Directory ./N{N}/{dev}/{sim}/{sample} found!')
 
