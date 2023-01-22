@@ -25,10 +25,12 @@ t_min=0.40
 t_max=1.1
 number_of_PT_replicas=20
 number_of_real_replicas=10
-PT_flag=1
+PT_flag=0
 number_of_PT_step=64
 power_of_iterations=15
 
+#---------------------------------------------#
+# Tuning the following settings is a bad idea #
 #---------------------------------------------#
 print_config=4	   							  #
 frequency_mode=3							  #
@@ -42,7 +44,7 @@ frequency_mode=3							  #
 #number_of_PT_step -> How often the exchange between two nearby replicas in energy is proposed, in Monte Carlo iterations.
 #power_of_iteration -> Min value: 6. We use the convention of inputting two raised to the power of the number of iterations we want to run our Monte Carlo simulation for.
 #the real number of iteration will be (2^power_of_iteration)/number_of_PT_step
-number_of_iterations=$((2**$power_of_iterations/$number_of_PT_step))
+number_of_iterations=$((2**$power_of_iterations/$number_of_PT_step)) #####################################################################
 #print_config -> How often the configuration is printed, in PT_steps.
 #frequency_mode -> Indicates how the frequencies are generated. If this parameter is 1, the frequencies are taken from an input file (yet to be implemented), 
 				   #if it is two, the frequencies are generated "comb-like" between 0 and the DW parameter (see further on),
