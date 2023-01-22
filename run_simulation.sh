@@ -103,7 +103,7 @@ resume=0    #check the last sample by looking
 
 
 #---------------------------------------------#
-#             some useful argument            #
+#             some useful arguments           #
 #---------------------------------------------#
 if [ "$1" == "-v" ] || [ "$1" == "--version" ]; then
     clear
