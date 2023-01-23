@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import sys
 
 class Settings:
 
@@ -7,15 +8,15 @@ class Settings:
         if file_path:
             self.load_settings(file_path)
         else:
-            print(f'No file path. Exit')
-            return -1
+            print(f'No file path. Exit', file=sys.stderr)
+            sys.exit(1)
 
     def load_settings(self, file_path):
         self.size, self.replicas, self.pt_rate, self.iter, self.first, self.npt, self.pt,  self.print_rate = np.loadtxt(f'{file_path}/analysis_input.info', dtype=np.int32)
         
     def print_settings(self):
         print("Options")
-        print(f' SIZE: {self.size}\n NREP: {self.replicas}\n PT_rate: {self.pt_rate}\n NITER: {self.iter}\n first: {self.first}\n NPT: {self.npt} \n pt_flag: {self.pt}\n print_every: {self.print_rate}\n')
+        print(f' size: {self.size}\n replicas: {self.replicas}\n pt_rate: {self.pt_rate}\n iter: {self.iter}\n first: {self.first}\n npt: {self.npt} \n pt_flag: {self.pt}\n print_every: {self.print_rate}\n')
     
     def get_size(self):
         return self.size
