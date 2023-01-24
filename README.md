@@ -1,3 +1,18 @@
+Table of Contents
+=================
+1.  [SMrandomTetrads](#SMrandomTetrads)
+    1.  [The arch parameter](#The-arch-parameter)
+        1.  [CUDA 3.2 - 8.x (FERMI ARCH)](#CUDA-3.2---8.x-(FERMI-ARCH))
+        2.  [CUDA 5.x - 10.x (KEPLER ARCH)](#CUDA-5.x---10.x-(KEPLER-ARCH))
+        3.  [CUDA 6.x - 11.x (MAXWELL ARCH)](#CUDA-6.x---11.x-(MAXWELL-ARCH))
+        4.  [CUDA 8 and later (PASCAL ARCH)](#CUDA-8-and-later-(PASCAL-ARCH))
+        5.  [CUDA 9 and later (VOLTA ARCH)](#CUDA-9-and-later-(VOLTA-ARCH))
+        6.  [CUDA 10 and later (TURING ARCH)](#CUDA-10-and-later-(TURING-ARCH))
+        7.  [CUDA 11.1 and later (AMPERE ARCH)](#CUDA-11.1-and-later-(AMPERE-ARCH))
+        8.  [Lovelace (CUDA 11.8 and later)](#Lovelace-(CUDA-11.8-and-later))
+2.  [Temperatures](#Temperatures)
+
+
 SMrandomTetrads
 ===============
 
@@ -113,7 +128,6 @@ analyzer.print_frequencies()
 
 This will initialize the analyzer with the given parameters and path, load the configurations and frequencies, and print the frequencies.
 
-#) SEC-5 The directory tree
 
 
 
