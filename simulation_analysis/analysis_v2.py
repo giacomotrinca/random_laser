@@ -4,34 +4,35 @@ import sys
 import numpy as np
 
 # Getting parameters from bash script ######################
-N = np.int32(sys.argv[1])             #Size of the system  #
-t_min = np.float64(sys.argv[2])       #Minimal Temperature #
-t_max = np.float64(sys.argv[3])       #Maximal Temperature #
-nthreads=np.int32(sys.argv[4])        #Number of threads   #
-#devices = np.int32(sys.argv[4])      #Number of devices   #
-#-------------------------------------######################
+N = np.int32(sys.argv[1])          # Size of the system
+t_min = np.float64(sys.argv[2])    # Minimal Temperature
+t_max = np.float64(sys.argv[3])    # Maximal Temperature
+nthreads = np.int32(sys.argv[4])   # Number of threads
+# ------------------------------------######################
+size_path = f'N{N}'
 
-devices = loadingModule.list_directories(f'N{N}')
+devices = loadingModule.GetDirectories(path = size_path)
+
 for dev in devices:
-    simulations = loadingModule.list_directories(f'N{N}/{dev}') 
+    dev_path = size_path + f'/{dev}'
+    simulations = loadingModule.GetDirectories(path = dev_path)
 
-    for sim in simulations:
-        path =  f'N{N}/{dev}/{sim}'    
-        samples = loadingModule.list_directories(path)
-        options = loadingModule.Settings(path)
-        options.print_settings()
+    for simulation in simulations:
+        simulation_path = dev_path + f'/{simulation}'
         
+        samples = loadingModule.GetDirectories(path = simulation_path)
+        functionsModule.checkSamples(samples=samples, path=simulation_path)
+        options = loadingModule.Settings(simulation_path)
+        
+        full_samples_directories = [simulation_path + f'/{d}' for d in samples]
+        analysis = functionsModule.Analysis(paths=full_samples_directories, param=options.get_all())
+        #analysis.print_path()
+        #analysis.print_parameters()
 
-        if len(samples) > 1 :
-            print(f'Found {len(samples)} samples')
-        elif len(samples) == 1:
-            print(f'Found {len(samples)} sample')
-        else :
-            print(f'Warning: No samples found.', file=sys.stderr)
-            sys.exit(-1)
-        
 
         
 
-        
+
+
+
 

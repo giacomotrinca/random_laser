@@ -2,6 +2,7 @@ import os
 import numpy as np
 import sys
 
+
 class Settings:
 
     def __init__(self, file_path= None):
@@ -41,12 +42,18 @@ class Settings:
     
     def get_print_rate(self):
         return self.print_rate
-
     
+    def get_all(self):
+        return self.size, self.replicas, self.pt_rate, self.iter, self.first, self.npt, self.pt, self.print_rate 
 
 
+def GetConfig(path):
+    return np.loadtxt(path, usecols=[2, 3], dtype=np.float64)
 
-def list_directories(path):
+def GetFrequencies(path):
+    return np.loadtxt(path, dtype=np.float64)[:, 1]
+    
+def GetDirectories(path):
     return [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
 
 def find_PT(string):
@@ -56,3 +63,4 @@ def find_PT(string):
         return False
 
 
+ 
