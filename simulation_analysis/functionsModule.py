@@ -24,6 +24,7 @@ class Analysis:
     def get_path(self):
         return [p for p in self.path]
     
+    
 
     
     
