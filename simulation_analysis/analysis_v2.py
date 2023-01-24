@@ -26,6 +26,7 @@ for dev in devices:
         
         full_samples_directories = [simulation_path + f'/{d}' for d in samples]
         analysis = functionsModule.Analysis(paths=full_samples_directories, param=options.get_all())
+        analysis.LoadWholeSample()
         #analysis.print_path()
         #analysis.print_parameters()
 

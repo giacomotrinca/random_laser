@@ -2,9 +2,21 @@ import numpy
 import os
 import sys
 import loadingModule
+import concurrent.futures
+
+
 
 class Analysis:
     def __init__(self, param = None, paths = None):
+        # Paramaters Array
+        # 0 -> Size
+        # 1 -> Replicas
+        # 2 -> pt_rate
+        # 3 -> iter
+        # 4 -> first
+        # 5 -> npt
+        # 6 -> print_rate
+        
         if param and paths:
             self.parameters = param
             self.path=paths
@@ -23,6 +35,12 @@ class Analysis:
     
     def get_path(self):
         return [p for p in self.path]
+    
+    def LoadWholeSample(self):
+
+        configurations = []
+        iters = range(self.parameters[4], self.parameters[3], self.parameters[6])
+        print(iters)
     
     
 
