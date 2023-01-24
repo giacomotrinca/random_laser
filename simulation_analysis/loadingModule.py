@@ -50,9 +50,7 @@ class Settings:
 def GetConfig(path):
     return np.loadtxt(path, usecols=[2, 3], dtype=np.float64)
 
-def GetFrequencies(path):
-    return np.loadtxt(path, dtype=np.float64)[:, 1]
-    
+
 def GetDirectories(path):
     return [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
 

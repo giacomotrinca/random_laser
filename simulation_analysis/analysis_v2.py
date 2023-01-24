@@ -25,10 +25,14 @@ for dev in devices:
         options = loadingModule.Settings(simulation_path)
         
         full_samples_directories = [simulation_path + f'/{d}' for d in samples]
-        analysis = functionsModule.Analysis(paths=full_samples_directories, param=options.get_all())
-        analysis.LoadWholeSample()
-        #analysis.print_path()
-        #analysis.print_parameters()
+        for sample_path in full_samples_directories:
+            analysis = functionsModule.Analysis(path=sample_path, param=options.get_all())        
+            analysis.LoadWholeSample()
+            print(f'Loaded {sample_path}')
+            analysis.LoadFrequencies()
+            #analysis.print_frequencies()
+            #analysis.print_config()
+        
 
 
         
