@@ -49,6 +49,26 @@ The first important thing that needs to be set is the architecture of your NVIDI
 
 *   SM\_89, NVIDIA GeForce RTX 4090, RTX 4080, RTX 6000, Tesla L40
 
+Temperatures
+------------
+
+As is known, the critical temperature of the system depends on its size. This means that for each size, a range of temperatures should be chosen in order to make the transition to the glassy state visible. The maximum temperature for all sizes should be 1.6, while we report this table, which should be taken only as a rough reference, as based on the model's finishes (edge conditions, the way frequencies are distributed), they can also change significantly.
+
+```
+| size | t\_min |
+| --- | --- |
+| 18 | 0.40 |
+| 32 | 0.45 |
+| 48 | 0.50 |
+| 62 | 0.55 |
+| 76 | 0.70 |
+| 96 | 0.80 |
+| 120 | 0.80 |
+| 150 | 0.85 |
+```
+
+
+
 Usage Guide for Analysis Class
 ==============================
 
