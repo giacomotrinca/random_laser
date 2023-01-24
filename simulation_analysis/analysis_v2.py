@@ -30,8 +30,7 @@ for dev in devices:
             analysis.LoadWholeSample()
             print(f'Loaded {sample_path}')
             analysis.LoadFrequencies()
-            #analysis.print_frequencies()
-            #analysis.print_config()
+            
         
 
 
