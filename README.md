@@ -1,22 +1,156 @@
 Table of Contents
 =================
-1.  [SMrandomTetrads](#SMrandomTetrads)
-    1.  [The arch parameter](#The-arch-parameter)
-        1.  [CUDA 3.2 - 8.x (FERMI ARCH)](#CUDA-3.2---8.x-(FERMI-ARCH))
-        2.  [CUDA 5.x - 10.x (KEPLER ARCH)](#CUDA-5.x---10.x-(KEPLER-ARCH))
-        3.  [CUDA 6.x - 11.x (MAXWELL ARCH)](#CUDA-6.x---11.x-(MAXWELL-ARCH))
-        4.  [CUDA 8 and later (PASCAL ARCH)](#CUDA-8-and-later-(PASCAL-ARCH))
-        5.  [CUDA 9 and later (VOLTA ARCH)](#CUDA-9-and-later-(VOLTA-ARCH))
-        6.  [CUDA 10 and later (TURING ARCH)](#CUDA-10-and-later-(TURING-ARCH))
-        7.  [CUDA 11.1 and later (AMPERE ARCH)](#CUDA-11.1-and-later-(AMPERE-ARCH))
-        8.  [Lovelace (CUDA 11.8 and later)](#Lovelace-(CUDA-11.8-and-later))
-2.  [Temperatures](#Temperatures)
 
-
+1.  [Libraries](#libraries)
+2.  [Main Function](#main-function)
+    1.  [Syntax Check](#syntax-check)
+    2.  [Seeds](#seeds)
+    3.  [Temperature](#temperature)
+    4.  [File Input](#file-input)
+    5.  [Other Operations](#other-operations)
+3.  [Other Functions](#other-functions)
+4.  [run\_simulation.sh Script](#run_simulation.sh-script)
+    1.  [Introduction](#introduction)
+    2.  [SETTINGS](#settings)
+        1.  [GPU architecture](#gpu-architecture)
+        2.  [PATH FOR GSL LIBRARY](#path-for-gsl-library)
+        3.  [Temperature range](#temperature-range)
+        4.  [Number of replicas](#number-of-replicas)
+        5.  [Number of Monte Carlo iterations](#number-of-monte-carlo-iterations)
+    3.  [RUN](#run)
+    4.  [OUTPUT](#output)
+    5.  [POST-PROCESSING](#post-processing)
+    6.  [EXAMPLES](#examples)
 SMrandomTetrads
 ===============
 
 SMrandomTetrads is a program written by many people, and has a history of almost ten years. The goal of this program is to simulate the 4-phasor random laser model, which is known to be a disordered spin glass system. Here we explain how to use this tool.
+
+Libraries
+---------
+
+The following libraries are included in the code:
+
+*   `iostream`
+*   `fstream`
+*   `vector`
+*   `queue`
+*   `algorithm`
+*   `cmath`
+*   `iomanip`
+*   `sys/time.h`
+*   `stdlib.h`
+*   `stdio.h`
+*   `cuda.h`
+*   `curand.h`
+*   `curand_kernel.h`
+*   `thrust/host_vector.h`
+*   `thrust/device_vector.h`
+*   `thrust/device_ptr.h`
+*   `thrust/generate.h`
+*   `thrust/reduce.h`
+*   `thrust/functional.h`
+*   `thrust/fill.h`
+*   `thrust/copy.h`
+*   `thrust/execution_policy.h`
+*   `SMrandomTetradsRUNCHECK.h`
+*   `SMrandomTetradsSettings.h`
+*   `gtcStructures.h`
+*   `SMrandomTetrads_structures.h`
+*   `hashing.cpp`
+*   `graph.cpp`
+*   `generate4plets.cpp`
+*   `gsl_randist.h`
+*   `gsl_rng.h`
+*   `tetrads.cpp`
+*   `generateQuadsFully.cpp`
+*   `parallelMCstep.cu`
+*   `functionsSM_CPU.cpp`
+*   `SMrandomTetrads_CPU_GPU_initializations_v2.h`
+*   `gtcTools.h`
+*   `time.h`
+*   `resumeToolsGTC.h`
+
+Main Function
+-------------
+
+The main function of the code takes in command line arguments, including the number of arguments, and performs various operations based on these arguments.
+
+### Syntax Check
+
+The function `checkSyntax()` is called to check that the correct number of arguments have been passed in.
+
+### Seeds
+
+The code generates and sets random seeds for the program, including a master seed and seeds for the graph and replicas.
+
+### Temperature
+
+The code also handles the temperature range and intervals, and stores the values in an array.
+
+### File Input
+
+A file named "input\_analysis.dat" is opened and data is written to it.
+
+### Other Operations
+
+Other operations are performed in the code, such as checking for certain conditions and exiting the program if they are not met.
+
+Other Functions
+---------------
+
+In addition to the main function, the code includes various other functions for performing specific tasks, such as generating and handling seeds, checking syntax, and writing to files. These functions are called from within the main function to complete the program's overall functionality.
+
+run\_simulation.sh Script
+=========================
+
+Introduction
+------------
+
+The `run_simulation.sh` script is a Bash script that is used to configure and run a Monte Carlo simulation of a physical system. It sets various parameters for the simulation, such as the GPU architecture, the temperature range, the number of replicas, and the number of Monte Carlo iterations.
+
+SETTINGS
+--------
+
+### GPU architecture
+
+The script starts by setting the GPU architecture that will be used for the simulation. This is done by setting the value of the `arch` variable to the appropriate value. The values that are currently supported are 30 (VISNU/DURGA), 35 (KRAKEN), and 70 (ECATON). It is important to note that before running the script, the value of this variable should be checked and set to the correct value according to the README.md file, SEC-I.
+
+### PATH FOR GSL LIBRARY
+
+The script also sets the path for the GNU Scientific Library (GSL), which is a numerical library that provides a wide range of mathematical functions. The path is set by the `gsl_path` variable. For example, on the developer's laptop, the path is set to `/usr/local/include/gsl`, while on a cluster, it is set to `/usr/include/gsl`.
+
+### Simulation settings
+
+The script then sets various simulation settings, such as the size of the system, the temperature range, the number of PT replicas, and the number of real replicas. These settings include:
+
+*   `Size`: Number of modes of the system.
+*   `t_min` and `t_max`: Temperature range of the system.
+*   `number_of_PT_replicas`: Number of temperatures between `t_min` and `t_max`. They will be linearly spaced.
+*   `number_of_real_replicas`: Number of independent replicas of the system.
+*   `PT_flag`: Flag for the parallel exchange algorithm. If set to 1, only the equilibrium properties will be looked at, otherwise it should be set to 0.
+*   `number_of_PT_step`: How often the exchange between two nearby replicas in energy is proposed, in Monte Carlo iterations.
+*   `power_of_iterations`: The number of iterations that we want to run the Monte Carlo simulation for. The real number of iterations will be calculated as `(2^power_of_iterations)/number_of_PT_step`.
+
+### Tuning settings
+
+The script also includes settings that should not be modified as doing so is not recommended. These settings include `print_config`, which controls how often the configuration is printed, and `frequency_mode`, which indicates how the frequencies are generated.
+
+Script Execution
+----------------
+
+The script then calculates the number of iterations to run the simulation for, and sets flags for the resume protocol (BETA) and the backup flag. It also generates the `SMrandomTetradsRUNCHECK.h` header file which is used in the simulation code.
+
+Finally, the script runs the simulation by executing the appropriate code. It is important to note that editing this part of the script is not recommended, as it may cause the simulation to not run as intended.
+
+It is also important to note that running the script with the argument "man" will give you further information about the script.
+
+This script is useful for automating the process of running simulations and it allows the user to easily change the simulation parameters without having to manually change them in the code. This also makes it easy to run multiple simulations with different parameters without having to manually change the code each time. This can save a lot of time and effort, especially when running large simulations that take a long time to complete.
+
+It is also important to note that the script uses the parallel exchange algorithm, which allows the system to explore a wide range of temperatures in a relatively short amount of time. This can be useful for studying the equilibrium properties of the system over a wide range of temperatures.
+
+Overall, the `run_simulation.sh` script is a useful tool for automating the process of running Monte Carlo simulations, and it allows the user to easily change the simulation parameters without having to manually change them in the code. This can save a lot of time and effort, especially when running large simulations that take a long time to complete.
+
 
 The arch parameter.
 -------------------
