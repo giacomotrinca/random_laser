@@ -2,7 +2,7 @@ import loadingModule
 import functionsModule
 import sys
 import numpy as np
-
+import os
 # Getting parameters from bash script ######################
 N = np.int32(sys.argv[1])          # Size of the system
 t_min = np.float64(sys.argv[2])    # Minimal Temperature
@@ -18,11 +18,12 @@ for dev in devices:
     simulations = loadingModule.GetDirectories(path = dev_path)
 
     for simulation in simulations:
+        
         simulation_path = dev_path + f'/{simulation}'
         
         samples = loadingModule.GetDirectories(path = simulation_path)
         number_of_sample = functionsModule.GetSampleIndex(samples)
-        
+        os.system(f'mkdir -p {simulation_path}/data')
         functionsModule.checkSamples(samples=samples, path=simulation_path)
         options = loadingModule.Settings(simulation_path, t_min=t_min, t_max=t_max)
         
@@ -46,6 +47,8 @@ for dev in devices:
 
 
             count += 1
+        
+        os.system(f'mv *.dat {simulation_path}/data')
 
             
         
