@@ -5,9 +5,11 @@ import sys
 
 class Settings:
 
-    def __init__(self, file_path= None):
-        if file_path:
+    def __init__(self, file_path= None, t_min = None, t_max = None):
+        if file_path and t_min and t_max:
             self.load_settings(file_path)
+            self.tmin = t_min
+            self.tmax = t_max
         else:
             print(f'No file path. Exit', file=sys.stderr)
             sys.exit(1)
@@ -44,7 +46,7 @@ class Settings:
         return self.print_rate
     
     def get_all(self):
-        return self.size, self.replicas, self.pt_rate, self.iter, self.first, self.npt, self.pt, self.print_rate 
+        return self.size, self.replicas, self.pt_rate, self.iter, self.first, self.npt, self.pt, self.print_rate, self.tmin, self.tmax 
 
 
 def GetConfig(path):
@@ -54,11 +56,6 @@ def GetConfig(path):
 def GetDirectories(path):
     return [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
 
-def find_PT(string):
-    if "PT" in string:
-        return True
-    else:
-        return False
 
 
  

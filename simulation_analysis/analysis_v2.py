@@ -22,14 +22,23 @@ for dev in devices:
         
         samples = loadingModule.GetDirectories(path = simulation_path)
         functionsModule.checkSamples(samples=samples, path=simulation_path)
-        options = loadingModule.Settings(simulation_path)
+        options = loadingModule.Settings(simulation_path, t_min=t_min, t_max=t_max)
         
         full_samples_directories = [simulation_path + f'/{d}' for d in samples]
+        count = 1
         for sample_path in full_samples_directories:
-            analysis = functionsModule.Analysis(path=sample_path, param=options.get_all())        
-            analysis.LoadWholeSample()
+            analysis = functionsModule.Analysis(path=sample_path, param=options.get_all(), sample = count)        
+            analysis.print_path()
+            analysis.LoadWholeSampleFiles()
             print(f'Loaded {sample_path}')
-            analysis.LoadFrequencies()
+            analysis.GetFrequenciesFile()
+            analysis.GetParallelTemperingFile()
+            analysis.GetTemperatures()
+            #analysis.print_energy()
+            analysis.MakeSpectrum(mean_flag=True)
+            analysis.DumpSpectrum()
+            count += 1
+
             
         
 
