@@ -23,6 +23,7 @@ class Analysis:
             self.tmax = param[9]
             self.iterations = np.array([k for k in range(self.first, self.iters, self.print_rate)], dtype=np.int32)
             self.sample = sample
+            
         else:
             print(f'You have to initialize the analyzer!')
             sys.exit(-1)
@@ -79,6 +80,7 @@ class Analysis:
             energy.append(np.loadtxt(parallel_tempering_path, usecols=cols))
         energy = np.array(energy, dtype=np.float64)
         self.energy = np.einsum("ijk->ikj", energy)
+        #print(np.shape(self.energy))
 
     def print_energy(self):
         print(np.shape(self.energy))
@@ -101,7 +103,7 @@ class Analysis:
             if mean_flag:
                 self.mean_spectrum = np.mean(self.spectrum, axis = 2)
                 self.std_spectrum = np.std(self.spectrum, axis=2)
-                print(np.shape(self.std_spectrum))
+                #print(np.shape(self.std_spectrum))
         else:
             if mean_flag:
                 self.mean_spectrum=[]
@@ -124,7 +126,7 @@ class Analysis:
             self.print_std_spectrum = np.mean(self.std_spectrum, axis = 1)
             self.print_mean_spectrum = np.einsum("ij -> ji", self.print_mean_spectrum)
             self.print_std_spectrum = np.einsum("ij -> ji", self.print_std_spectrum)
-            print(np.shape(self.print_mean_spectrum))
+            #print(np.shape(self.print_mean_spectrum))
             filename = f'mean_spectrum_PT_size{self.size}_sample{self.sample}.dat'
             file_handle = open(filename, "w")
             #file_handle.close()
@@ -154,6 +156,25 @@ class Analysis:
                 del self.print_mean_spectrum
                 del self.print_std_spectrum
             
+            if print_instant:
+                print_spectrum = np.mean(self.spectrum, axis = 1)
+                print_std = np.std(self.spectrum, axis=1)
+                print(np.shape(print_spectrum))
+            
+                for i in range(len(print_spectrum[0])):
+                    filename = f'spectrum_time{i}_size{self.size}_sample{self.sample}.dat'
+                    file_handle = open(filename, "w")
+
+                    for k in range(self.npt):
+                        np.savetxt(file_handle, np.c_[self.frequencies, print_spectrum[:, i, k], print_std[:, i, k], np.full(np.shape(print_spectrum[:, i, k]), self.temperatures[k])], fmt="%4e", delimiter="\t", newline="\n")
+                        file_handle.write("\n\n")
+                    file_handle.close()
+                del print_spectrum
+                del print_std
+        
+        
+                
+            
 
 
 
@@ -166,7 +187,13 @@ class Analysis:
 
                 
             
-
+def GetSampleIndex(samples):
+    k_list = []
+    for string in samples:
+        k = string.split("sample")[1]
+        k_list.append(int(k))
+    
+    return np.array(k_list, dtype=np.int32)
 
        
 
