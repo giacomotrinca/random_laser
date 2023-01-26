@@ -91,6 +91,46 @@ class Analysis:
         else:
             return False
     
+    def DumpEnergy(self):
+        index = 0
+        length = 1
+        mean_energy = []
+        std_energy = []
+        times = []
+        count = 0
+        for i in range(int(np.log2(len(self.energy[0, 0])))):
+            mean_energy.append(np.mean(self.energy[:, :, index:index+length], axis = 2))
+            std_energy.append(np.std(self.energy[:, :, index:index+length], axis = 2)/np.sqrt(length))
+            times.append((index+length) * self.pt_rate)
+            index += length
+            length *= 2
+            count += 1
+            if count == int(np.log2(len(self.energy[0, 0]))) -1 :
+                self.raw_energy = self.size * self.energy[:, :, index:index+length]
+                self.mean_energy = self.size * np.mean(self.energy[:, :, index:index+length], axis = 2)
+
+
+        mean_energy = np.array(mean_energy, dtype=np.float64)
+        std_energy = np.array(std_energy, dtype=np.float64)
+        mean_energy = np.mean(mean_energy, axis = 1)
+        times = np.array(times, dtype=np.int32)
+        #print(times)
+        std_energy = np.mean(std_energy, axis = 1)
+        #print(np.shape(mean_energy))
+
+        filename = f'mean_energy_size{self.size}_sample{self.sample}.dat'
+        file_handle = open(filename, "w")
+        for k in range(self.npt-1):
+            np.savetxt(file_handle, np.c_[times, self.size * mean_energy[:, k], self.size* std_energy[:, k], np.full(np.shape(mean_energy[:, k]), self.temperatures[self.npt -1 - k])])
+            file_handle.write("\n\n")
+        file_handle.close()
+        del mean_energy
+        del std_energy
+        del times
+        del filename
+        
+        
+    
     def MakeSpectrum(self, mean_flag = True):
         
         self.spectrum = np.einsum("ijkl -> lijk", self.configurations[:, :, :, :, 0]**2 + self.configurations[:, :, :, :, 1]**2)
@@ -102,19 +142,19 @@ class Analysis:
         if self.find_PT():
             if mean_flag:
                 self.mean_spectrum = np.mean(self.spectrum, axis = 2)
-                self.std_spectrum = np.std(self.spectrum, axis=2)
+                self.std_spectrum = np.std(self.spectrum, axis=2)/np.sqrt(len(self.spectrum[0, 0]))
                 #print(np.shape(self.std_spectrum))
         else:
             if mean_flag:
                 self.mean_spectrum=[]
                 self.std_spectrum = []
                 index = 0
-                lenght=1
+                length=1
                 for i in range(int(np.log2(len(self.spectrum[0, 0, :, 0])))):
-                    self.mean_spectrum.append(np.mean(self.spectrum[:, :, index:index+lenght, :], axis=2))
-                    self.std_spectrum.append(np.std(self.spectrum[:, :, index:index+lenght, :], axis=2))
-                    index += lenght
-                    lenght *= 2
+                    self.mean_spectrum.append(np.mean(self.spectrum[:, :, index:index+length, :], axis=2))
+                    self.std_spectrum.append(np.std(self.spectrum[:, :, index:index+length, :], axis=2)/np.sqrt(length))
+                    index += length
+                    length *= 2
                 self.mean_spectrum = np.array(self.mean_spectrum, dtype=np.float64)
                 self.std_spectrum = np.array(self.std_spectrum, dtype=np.float64)
 
@@ -159,7 +199,7 @@ class Analysis:
             if print_instant:
                 print_spectrum = np.mean(self.spectrum, axis = 1)
                 print_std = np.std(self.spectrum, axis=1)
-                print(np.shape(print_spectrum))
+                #print(np.shape(print_spectrum))
             
                 for i in range(len(print_spectrum[0])):
                     filename = f'spectrum_time{i}_size{self.size}_sample{self.sample}.dat'
@@ -171,6 +211,45 @@ class Analysis:
                     file_handle.close()
                 del print_spectrum
                 del print_std
+
+    def ComputeSpecificHeat(self):
+        
+        e = self.size * self.energy[:, :, int(self.iters/2):]
+        
+        e2 = e**2
+
+        mean_e = np.mean(e, axis=2)
+        sigma_e = np.std(e, axis=2)/np.sqrt(int(self.iters/2))
+        mean_e2 = np.mean(e2, axis=2)
+        #print(np.shape(mean_e))
+        temperatures = np.delete(self.temperatures, -1)
+        mean_e = np.fliplr(mean_e)
+        mean_e2 = np.fliplr(mean_e2)
+        cv = self.size * (mean_e2 - mean_e **2)/(self.size * temperatures[np.newaxis, :]**2)
+        #print(np.shape(cv))
+        sigma = np.sqrt(cv**2 * (2*mean_e2*sigma_e**2/(self.size*temperatures[np.newaxis, :]**4) + sigma_e**2/(self.size*temperatures[np.newaxis, :]**2)))
+        sigma /= self.size
+        #print(np.shape(sigma))
+        if self.find_PT():
+            filename = f'specific_heat_PT_sample{self.sample}.dat'
+        else:
+            filename = f'specific_heat_NOPT_sample{self.sample}.dat'
+
+        file_handle = open(filename, "w")
+        for r in range(self.replicas):
+            np.savetxt(file_handle, np.c_[temperatures, cv[r, :], sigma[r, :], np.full(shape = np.shape(cv[r, :]), fill_value=r)], fmt="%4e", delimiter="\t", newline="\n")
+            file_handle.write("\n\n")
+        
+        file_handle.close()
+        del cv 
+        del sigma 
+        del mean_e
+        del sigma_e
+        del temperatures
+        del e 
+        del e2
+
+
         
         
                 

@@ -36,6 +36,8 @@ for dev in devices:
             analysis.GetFrequenciesFile()
             analysis.GetParallelTemperingFile()
             analysis.GetTemperatures()
+            analysis.DumpEnergy()
+            analysis.ComputeSpecificHeat()
             #analysis.print_energy()
 
             analysis.MakeSpectrum(mean_flag=True)
