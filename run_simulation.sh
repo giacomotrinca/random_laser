@@ -107,8 +107,8 @@ resume=0    #check the last sample by looking
 #---------------------------------------------#
 if [ "$1" == "-v" ] || [ "$1" == "--version" ]; then
     clear
-    echo "SMrandomTetrads - v 0.1.0-ResumeBeta1"
-    echo "SMrandomTetrads - Analysis - v 3.0.0"
+    echo "SMrandomTetrads - v 0.1.7-ResumeBeta1"
+    echo "SMrandomTetrads - Analysis - v 4.0.0"
     exit 0
 fi
 

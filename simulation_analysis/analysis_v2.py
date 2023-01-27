@@ -7,7 +7,7 @@ import os
 N = np.int32(sys.argv[1])          # Size of the system
 t_min = np.float64(sys.argv[2])    # Minimal Temperature
 t_max = np.float64(sys.argv[3])    # Maximal Temperature
-nthreads = np.int32(sys.argv[4])   # Number of threads
+bins = np.int32(sys.argv[4])   # Number of threads
 # ------------------------------------######################
 size_path = f'N{N}'
 
@@ -30,7 +30,7 @@ for dev in devices:
         full_samples_directories = [simulation_path + f'/{d}' for d in samples]
         count = 0
         for sample_path in full_samples_directories:
-            analysis = functionsModule.Analysis(path=sample_path, param=options.get_all(), sample = number_of_sample[count])        
+            analysis = functionsModule.Analysis(path=sample_path, param=options.get_all(), sample = number_of_sample[count], bins=bins)        
             analysis.print_path()
             analysis.LoadWholeSampleFiles()
             print(f'Loaded {sample_path}')
@@ -39,11 +39,11 @@ for dev in devices:
             analysis.GetTemperatures()
             analysis.DumpEnergy()
             analysis.ComputeSpecificHeat()
-            #analysis.print_energy()
-
             analysis.MakeSpectrum(mean_flag=True)
-            
             analysis.DumpSpectrum(print_instant=True)
+            analysis.ComputeParisiOverlaps()
+            analysis.ComputeTheoIFO()
+            analysis.PrintDistributions()
 
 
             count += 1

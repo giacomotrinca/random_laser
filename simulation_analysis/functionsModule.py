@@ -7,7 +7,7 @@ import concurrent.futures as multithreading
 
 
 class Analysis:
-    def __init__(self, param = None, path = None, sample = None):
+    def __init__(self, param = None, path = None, sample = None, bins = None):
         if param and path:
             self.parameters = param
             self.path=path
@@ -23,6 +23,7 @@ class Analysis:
             self.tmax = param[9]
             self.iterations = np.array([k for k in range(self.first, self.iters, self.print_rate)], dtype=np.int32)
             self.sample = sample
+            self.bins = bins
             
         else:
             print(f'You have to initialize the analyzer!')
@@ -248,20 +249,72 @@ class Analysis:
         del temperatures
         del e 
         del e2
-
-
+    
+    def ComputeParisiOverlaps(self):
+        
+        if self.replicas <= 1:
+            print('I can not compute overlaps: replicas of the system are insufficients')
+            return -1
         
         
-                
+        sigma = self.configurations[:, :, :, :, 0]
+        tau = self.configurations[:, :, :, :, 1]
+        q = (np.einsum('ajkl,bjkl->abjk', sigma, sigma) + np.einsum('ajkl,bjkl->abjk', tau, tau))/self.size
+        i, j = np.triu_indices(self.replicas, k=1)
+        self.parisi = q[i, j, :, :]
+        del q
+        del sigma
+        del tau
+        #print(np.shape(self.parisi))
+    
+    def ComputeTheoIFO(self):
+        if self.find_PT():
+            delta = self.spectrum - np.mean(self.spectrum, axis = 2)[:, :, np.newaxis, :]
+            c = np.einsum('jaik, jbik -> abik', delta, delta)
+            norm = np.einsum('jaik -> aik', delta*delta) 
+            norm = np.sqrt(np.einsum('aij, bij -> abij', norm, norm))
+            c /= norm
+            i, j = np.triu_indices(self.replicas, k=1)
+            self.theo_ifo = c[i, j, :, :]
+        
+        else:
+            index = 0
+            length = 2
+            self.theo_ifo = []
+            for b in range(int(np.log2(len(self.configurations[0])))):
+                delta = self.spectrum - np.mean(self.spectrum[:, :, index:index+length, :], axis = 2)[:, :, np.newaxis, :]
+                c = np.einsum('jaik, jbik -> abik', delta, delta)
+                norm = np.einsum('jaik -> aik', delta*delta) 
+                norm = np.sqrt(np.einsum('aij, bij -> abij', norm, norm))
+                c /= norm
+                i, j = np.triu_indices(self.replicas, k=1)
+                self.theo_ifo.append(c[i, j, :, :])
+                index += length
+                length *= 2
+            self.theo_ifo = np.array(self.theo_ifo, dtype=np.float64)
+            #print(np.shape(self.theo_ifo))
+        
             
 
-
-
-
-
             
         
 
+    def ComputeExpIFO(self):
+        pass
+
+    def PrintDistributions(self):
+        
+        bin_size = 2./self.bins
+        #x = np.arange(-1, )
+        if self.find_PT():
+            print(np.shape(self.parisi))
+            print(np.shape(self.theo_ifo))
+
+            for k in range(self.npt):
+                pass
+
+    def PrintOverlap(self):
+        pass
 
 
                 
@@ -273,15 +326,6 @@ def GetSampleIndex(samples):
         k_list.append(int(k))
     
     return np.array(k_list, dtype=np.int32)
-
-       
-
-       
-
-    
-    
-
-    
     
 
 def checkSamples(samples, path):
