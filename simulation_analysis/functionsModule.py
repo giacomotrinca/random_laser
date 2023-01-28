@@ -1,5 +1,4 @@
 import numpy as np
-import os
 import sys
 import loadingModule 
 import concurrent.futures as multithreading
@@ -93,7 +92,7 @@ class Analysis:
     
     def DumpEnergy(self):
         index = 0
-        length = 1
+        length = 2
         mean_energy = []
         std_energy = []
         times = []
@@ -299,7 +298,38 @@ class Analysis:
         
 
     def ComputeExpIFO(self):
-        pass
+        
+        if self.find_PT():
+            #print(np.shape(self.spectrum))
+            delta = np.mean(self.spectrum, axis=2) 
+            delta = delta - np.mean(delta, axis = 1)[:, np.newaxis, :]
+
+            c = np.einsum('ijk, ilk -> jlk', delta, delta)
+            norm = np.einsum('ijk -> jk', delta*delta)
+            norm = np.sqrt(np.einsum('jk, ik -> ijk', norm, norm))
+            c /= norm
+            i, j = np.triu_indices(self.replicas, k=1)
+            self.exp_ifo = c[i, j, :]
+            #print(np.shape(self.exp_ifo))
+        else:
+            index = 0
+            length= 2
+            self.exp_ifo = []
+
+            for b in range(int(np.log2(len(self.configurations[0])))):
+                delta = np.mean(self.spectrum[:, :, index:index+length, :], axis=2) 
+                delta = delta - np.mean(delta, axis = 1)[:, np.newaxis, :]
+
+                c = np.einsum('ijk, ilk -> jlk', delta, delta)
+                norm = np.einsum('ijk -> jk', delta*delta)
+                norm = np.sqrt(np.einsum('jk, ik -> ijk', norm, norm))
+                c /= norm
+                i, j = np.triu_indices(self.replicas, k=1)
+                self.exp_ifo.append(c[i, j, :])
+                index += length
+                length *= 2
+            self.exp_ifo = np.array(self.exp_ifo, dtype=np.float64)
+            #print(np.shape(self.exp_ifo))
 
     def PrintDistributions(self, bins):
         self.bins = bins
@@ -308,20 +338,28 @@ class Analysis:
         if self.find_PT():
             #print(np.shape(self.parisi))
             #print(np.shape(self.theo_ifo))
-            filename_pq = f'parisi_dist_PT_sample{self.sample}.dat'
-            filename_pc = f'theo_ifo_dist_PT_sample{self.sample}.dat'
+            filename_pq = f'parisi_dist_PT_size{self.size}_sample{self.sample}.dat'
+            filename_pc = f'theo_ifo_dist_PT_size{self.size}_sample{self.sample}.dat'
+            filename_pe = f'exp_ifo_dist_PT_size{self.size}_sample{self.sample}.dat'
             file_handle_pc = open(filename_pc, "w")
             file_handle_pq = open(filename_pq, "w")
+            file_handle_pe = open(filename_pe, "w")
 
             for k in range(self.npt):
                 pq = np.histogram(a = self.parisi[:, :, k], bins=self.bins, density=True)[0]
                 pc = np.histogram(a = self.theo_ifo[:, :, k], bins=self.bins, density=True)[0]
+                pe = np.histogram(a = self.exp_ifo[:, k], bins=self.bins, density=True)[0]
+                
                 np.savetxt(file_handle_pq, np.c_[q, pq, np.full(shape=np.shape(pq),fill_value=self.temperatures[k])], fmt="%4e", delimiter="\t", newline="\n")
                 np.savetxt(file_handle_pc, np.c_[q, pc, np.full(shape=np.shape(pc),fill_value=self.temperatures[k])], fmt="%4e", delimiter="\t", newline="\n")
+                np.savetxt(file_handle_pe, np.c_[q, pe, np.full(shape=np.shape(pe),fill_value=self.temperatures[k])], fmt="%4e", delimiter="\t", newline="\n")
+                
                 file_handle_pc.write("\n\n")
                 file_handle_pq.write("\n\n")
+                file_handle_pe.write("\n\n")
             file_handle_pq.close()
             file_handle_pc.close()
+            file_handle_pe.close()
         else:
             #print(np.shape(self.parisi))
             #print(np.shape(self.theo_ifo))
@@ -330,24 +368,56 @@ class Analysis:
             for b in range(int(np.log2(len(self.configurations[0])))):
                 filename_pq = f'parisi_dist_block{b}_size{self.size}_sample{self.sample}.dat'
                 filename_pc = f'theo_ifo_dist_block{b}_size{self.size}_sample{self.sample}.dat'
+                filename_pe = f'exp_ifo_dist_block{b}_size{self.size}_sample{self.sample}.dat'
                 file_handle_pc = open(filename_pc, "w")
                 file_handle_pq = open(filename_pq, "w")
+                file_handle_pe = open(filename_pe, "w")
                 for k in range(self.npt):
                     pq = np.histogram(a = self.parisi[:, index:index+length, k], bins=self.bins, density=True)[0]
                     pc = np.histogram(a = self.theo_ifo[b, :, :, k], bins=self.bins, density=True)[0]
+                    pe = np.histogram(a = self.exp_ifo[b, :, k], bins=self.bins, density=True)[0]
+
                     np.savetxt(file_handle_pq, np.c_[q, pq, np.full(shape=np.shape(pq),fill_value=self.temperatures[k])], fmt="%4e", delimiter="\t", newline="\n")
                     np.savetxt(file_handle_pc, np.c_[q, pc, np.full(shape=np.shape(pc),fill_value=self.temperatures[k])], fmt="%4e", delimiter="\t", newline="\n")
+                    np.savetxt(file_handle_pe, np.c_[q, pe, np.full(shape=np.shape(pe),fill_value=self.temperatures[k])], fmt="%4e", delimiter="\t", newline="\n")
+                    
                     file_handle_pc.write("\n\n")
                     file_handle_pq.write("\n\n")
+                    file_handle_pe.write("\n\n")
+
                 file_handle_pq.close()
                 file_handle_pc.close()
+                file_handle_pe.close()
                 index += length
                 length *= 2
 
             
     def PrintOverlap(self):
-        pass
+        
+        if self.find_PT():
+            #print(np.shape(self.parisi))
+            #print(np.shape(self.theo_ifo))
+            q = np.reshape(self.parisi, newshape=(-1, self.npt))
+            c = np.reshape(self.theo_ifo, newshape=(-1, self.npt))
+            filename = f'overlaps_PT_size{self.size}_sample{self.sample}.dat'
+            file_handle = open(filename, "w")
 
+            for k in range(self.npt):
+                np.savetxt(file_handle, np.c_[q[:, k], c[:, k], np.full(shape = np.shape(q[:, k]), fill_value=self.temperatures[k])], fmt="%4e", delimiter="\t", newline="\n")
+                file_handle.write("\n\n")
+            file_handle.close()
+            '''
+        else:
+            print(np.shape(self.parisi))
+            print(np.shape(self.theo_ifo))
+            index = 0
+            length = 2
+
+            for b in range(int(np.log2(len(self.configurations[0])))):
+
+                index += length
+                length *= 2
+            '''
 
                 
             
@@ -362,9 +432,11 @@ def GetSampleIndex(samples):
 
 def checkSamples(samples, path):
     if len(samples) > 1 :
-        print(f'Found {len(samples)} samples in {path}')
+        #print(f'Found {len(samples)} samples in {path}')
+        pass
     elif len(samples) == 1:
-        print(f'Found {len(samples)} sample in {path}')
+        #print(f'Found {len(samples)} sample in {path}')
+        pass
     else :
         print(f'Warning: No samples found.', file=sys.stderr)
         sys.exit(-1)
@@ -372,4 +444,5 @@ def checkSamples(samples, path):
     
 
 
+        
         

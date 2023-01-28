@@ -3,6 +3,7 @@ import functionsModule
 import sys
 import numpy as np
 import os
+from tqdm import tqdm
 # Getting parameters from bash script ######################
 N = np.int32(sys.argv[1])          # Size of the system
 t_min = np.float64(sys.argv[2])    # Minimal Temperature
@@ -28,11 +29,11 @@ for dev in devices:
         
         full_samples_directories = [simulation_path + f'/{d}' for d in samples]
         count = 0
-        for sample_path in full_samples_directories:
+        for sample_path in tqdm(full_samples_directories, f'Processing {simulation_path}'):
             analysis = functionsModule.Analysis(path=sample_path, param=options.get_all(), sample = number_of_sample[count])        
-            analysis.print_path()
+            #analysis.print_path()
             analysis.LoadWholeSampleFiles()
-            print(f'Loaded {sample_path}')
+            #print(f'Loaded {sample_path}')
             analysis.GetFrequenciesFile()
             analysis.GetParallelTemperingFile()
             analysis.GetTemperatures()
@@ -42,7 +43,9 @@ for dev in devices:
             analysis.DumpSpectrum(print_instant=True)
             analysis.ComputeParisiOverlaps()
             analysis.ComputeTheoIFO()
+            analysis.ComputeExpIFO()
             analysis.PrintDistributions(bins = 80)
+            analysis.PrintOverlap()
 
 
             count += 1

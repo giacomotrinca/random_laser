@@ -25,9 +25,9 @@ t_min=0.40
 t_max=1.1
 number_of_PT_replicas=20
 number_of_real_replicas=10
-PT_flag=0
+PT_flag=1
 number_of_PT_step=64
-power_of_iterations=15
+power_of_iterations=20
 
 #---------------------------------------------#
 # Tuning the following settings is a bad idea #
