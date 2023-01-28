@@ -7,7 +7,7 @@ import concurrent.futures as multithreading
 
 
 class Analysis:
-    def __init__(self, param = None, path = None, sample = None, bins = None):
+    def __init__(self, param = None, path = None, sample = None):
         if param and path:
             self.parameters = param
             self.path=path
@@ -23,7 +23,6 @@ class Analysis:
             self.tmax = param[9]
             self.iterations = np.array([k for k in range(self.first, self.iters, self.print_rate)], dtype=np.int32)
             self.sample = sample
-            self.bins = bins
             
         else:
             print(f'You have to initialize the analyzer!')
@@ -302,17 +301,50 @@ class Analysis:
     def ComputeExpIFO(self):
         pass
 
-    def PrintDistributions(self):
-        
+    def PrintDistributions(self, bins):
+        self.bins = bins
         bin_size = 2./self.bins
-        #x = np.arange(-1, )
+        q = np.linspace(-1+bin_size, 1-bin_size, num=self.bins)
         if self.find_PT():
-            print(np.shape(self.parisi))
-            print(np.shape(self.theo_ifo))
+            #print(np.shape(self.parisi))
+            #print(np.shape(self.theo_ifo))
+            filename_pq = f'parisi_dist_PT_sample{self.sample}.dat'
+            filename_pc = f'theo_ifo_dist_PT_sample{self.sample}.dat'
+            file_handle_pc = open(filename_pc, "w")
+            file_handle_pq = open(filename_pq, "w")
 
             for k in range(self.npt):
-                pass
+                pq = np.histogram(a = self.parisi[:, :, k], bins=self.bins, density=True)[0]
+                pc = np.histogram(a = self.theo_ifo[:, :, k], bins=self.bins, density=True)[0]
+                np.savetxt(file_handle_pq, np.c_[q, pq, np.full(shape=np.shape(pq),fill_value=self.temperatures[k])], fmt="%4e", delimiter="\t", newline="\n")
+                np.savetxt(file_handle_pc, np.c_[q, pc, np.full(shape=np.shape(pc),fill_value=self.temperatures[k])], fmt="%4e", delimiter="\t", newline="\n")
+                file_handle_pc.write("\n\n")
+                file_handle_pq.write("\n\n")
+            file_handle_pq.close()
+            file_handle_pc.close()
+        else:
+            #print(np.shape(self.parisi))
+            #print(np.shape(self.theo_ifo))
+            index = 0
+            length = 2
+            for b in range(int(np.log2(len(self.configurations[0])))):
+                filename_pq = f'parisi_dist_block{b}_size{self.size}_sample{self.sample}.dat'
+                filename_pc = f'theo_ifo_dist_block{b}_size{self.size}_sample{self.sample}.dat'
+                file_handle_pc = open(filename_pc, "w")
+                file_handle_pq = open(filename_pq, "w")
+                for k in range(self.npt):
+                    pq = np.histogram(a = self.parisi[:, index:index+length, k], bins=self.bins, density=True)[0]
+                    pc = np.histogram(a = self.theo_ifo[b, :, :, k], bins=self.bins, density=True)[0]
+                    np.savetxt(file_handle_pq, np.c_[q, pq, np.full(shape=np.shape(pq),fill_value=self.temperatures[k])], fmt="%4e", delimiter="\t", newline="\n")
+                    np.savetxt(file_handle_pc, np.c_[q, pc, np.full(shape=np.shape(pc),fill_value=self.temperatures[k])], fmt="%4e", delimiter="\t", newline="\n")
+                    file_handle_pc.write("\n\n")
+                    file_handle_pq.write("\n\n")
+                file_handle_pq.close()
+                file_handle_pc.close()
+                index += length
+                length *= 2
 
+            
     def PrintOverlap(self):
         pass
 
