@@ -44,7 +44,7 @@ for dev in devices:
             analysis.ComputeParisiOverlaps()
             analysis.ComputeTheoIFO()
             analysis.ComputeExpIFO()
-            analysis.PrintDistributions(bins = 80)
+            analysis.PrintDistributions(bins = 100)
             analysis.PrintOverlap()
 
 

@@ -277,20 +277,30 @@ class Analysis:
         
         else:
             index = 0
-            length = 2
+            length = 1
             self.theo_ifo = []
             for b in range(int(np.log2(len(self.configurations[0])))):
-                delta = self.spectrum - np.mean(self.spectrum[:, :, index:index+length, :], axis = 2)[:, :, np.newaxis, :]
+                delta = self.spectrum[:, :, index:index+length, :] - np.mean(self.spectrum[:, :, index:index+length, :], axis = 2)[:, :, np.newaxis, :]
+                
+                if np.all(delta == 0):
+                    index += length
+                    length *= 2
+                    continue
+
+                
                 c = np.einsum('jaik, jbik -> abik', delta, delta)
                 norm = np.einsum('jaik -> aik', delta*delta) 
                 norm = np.sqrt(np.einsum('aij, bij -> abij', norm, norm))
                 c /= norm
+                #print(np.shape(c))
                 i, j = np.triu_indices(self.replicas, k=1)
                 self.theo_ifo.append(c[i, j, :, :])
+                
                 index += length
                 length *= 2
-            self.theo_ifo = np.array(self.theo_ifo, dtype=np.float64)
-            #print(np.shape(self.theo_ifo))
+                
+            
+            
         
             
 
@@ -313,13 +323,17 @@ class Analysis:
             #print(np.shape(self.exp_ifo))
         else:
             index = 0
-            length= 2
+            length= 1
             self.exp_ifo = []
 
             for b in range(int(np.log2(len(self.configurations[0])))):
                 delta = np.mean(self.spectrum[:, :, index:index+length, :], axis=2) 
                 delta = delta - np.mean(delta, axis = 1)[:, np.newaxis, :]
-
+                if np.all(delta == 0):
+                    index += length
+                    length *= 2
+                    print(b)
+                    continue
                 c = np.einsum('ijk, ilk -> jlk', delta, delta)
                 norm = np.einsum('ijk -> jk', delta*delta)
                 norm = np.sqrt(np.einsum('jk, ik -> ijk', norm, norm))
@@ -364,29 +378,36 @@ class Analysis:
             #print(np.shape(self.parisi))
             #print(np.shape(self.theo_ifo))
             index = 0
-            length = 2
+            length = 1
+            
             for b in range(int(np.log2(len(self.configurations[0])))):
                 filename_pq = f'parisi_dist_block{b}_size{self.size}_sample{self.sample}.dat'
-                filename_pc = f'theo_ifo_dist_block{b}_size{self.size}_sample{self.sample}.dat'
+                if b > 0:
+                    filename_pc = f'theo_ifo_dist_block{b}_size{self.size}_sample{self.sample}.dat'
                 filename_pe = f'exp_ifo_dist_block{b}_size{self.size}_sample{self.sample}.dat'
-                file_handle_pc = open(filename_pc, "w")
+                if b > 0:
+                    file_handle_pc = open(filename_pc, "w")
                 file_handle_pq = open(filename_pq, "w")
                 file_handle_pe = open(filename_pe, "w")
                 for k in range(self.npt):
                     pq = np.histogram(a = self.parisi[:, index:index+length, k], bins=self.bins, density=True)[0]
-                    pc = np.histogram(a = self.theo_ifo[b, :, :, k], bins=self.bins, density=True)[0]
+                    if b > 0:
+                        pc = np.histogram(a = self.theo_ifo[b-1][ :, :, k], bins=self.bins, density=True)[0]
                     pe = np.histogram(a = self.exp_ifo[b, :, k], bins=self.bins, density=True)[0]
 
                     np.savetxt(file_handle_pq, np.c_[q, pq, np.full(shape=np.shape(pq),fill_value=self.temperatures[k])], fmt="%4e", delimiter="\t", newline="\n")
-                    np.savetxt(file_handle_pc, np.c_[q, pc, np.full(shape=np.shape(pc),fill_value=self.temperatures[k])], fmt="%4e", delimiter="\t", newline="\n")
+                    if b > 0:
+                        np.savetxt(file_handle_pc, np.c_[q, pc, np.full(shape=np.shape(pc),fill_value=self.temperatures[k])], fmt="%4e", delimiter="\t", newline="\n")
                     np.savetxt(file_handle_pe, np.c_[q, pe, np.full(shape=np.shape(pe),fill_value=self.temperatures[k])], fmt="%4e", delimiter="\t", newline="\n")
                     
-                    file_handle_pc.write("\n\n")
+                    if b > 0: 
+                        file_handle_pc.write("\n\n")
                     file_handle_pq.write("\n\n")
                     file_handle_pe.write("\n\n")
 
                 file_handle_pq.close()
-                file_handle_pc.close()
+                if b > 0:
+                    file_handle_pc.close()
                 file_handle_pe.close()
                 index += length
                 length *= 2
@@ -408,8 +429,8 @@ class Analysis:
             file_handle.close()
             '''
         else:
-            print(np.shape(self.parisi))
-            print(np.shape(self.theo_ifo))
+            #print(np.shape(self.parisi))
+            #print(np.shape(self.theo_ifo))
             index = 0
             length = 2
 
@@ -443,6 +464,9 @@ def checkSamples(samples, path):
         
     
 
+class DisorderAverage:
 
+    def __init__(self):
+        pass
         
         
