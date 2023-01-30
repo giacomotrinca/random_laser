@@ -54,7 +54,7 @@ for dev in devices:
 #print(directories)     
 
 
-disorder = functionsModule.DisorderAverage(loadingModule.search_for_data_folder(size_path))
+disorder = functionsModule.DisorderAverage(loadingModule.search_for_data_folder(size_path), t_min=t_min, t_max=t_max)
 
 
 

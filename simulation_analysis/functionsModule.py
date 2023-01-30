@@ -463,22 +463,48 @@ def find_PT(string):
 
 class DisorderAverage:
 
-    def __init__(self, directories):
-        print(f'\n\nDisorder Average begins')
+    def __init__(self, directories, t_min, t_max):
+        self.tmin = t_min
+        self.tmax = t_max
+        print(f'\n\n')
+        print('---------------------------')
+        print('| Disorder Average begins |')
+        print('---------------------------')
         self.pt_directories = [d for d in directories if find_PT(d)]
         self.dyn_directories = [d for d in directories if not find_PT(d)]
         if self.pt_directories == []:
             print('No PT data directories')
         else:
             print('PT directories: ', self.pt_directories)
+            self.checkOptions(self.pt_directories)
         if self.dyn_directories == []:
             print('No Dyn data directories')
         else:
             print('Dyn directories: ', self.dyn_directories)
+            self.checkOptions(self.dyn_directories)
         
     
-    def checkOptions(string):
+    def checkOptions(self, strings, print_flag = False):
 
-        pass
-            
+        string_mod = []
+        string_to_remove = '/data'
+        for s in strings:
+            string_mod.append(s.replace(string_to_remove, ""))
+
+        if len(string_mod) == 1:
+            options = loadingModule.Settings(file_path=string_mod[0], t_min=self.tmin, t_max=self.tmax)
+            self.options = options.get_all()
+            if print_flag:
+                options.print_settings()
+        else:
+            options = loadingModule.Settings(file_path=string_mod[0], t_min=self.tmin, t_max=self.tmax)
+            for s in string_mod:
+                temp_opt = loadingModule.Settings(file_path=s, t_min=self.tmin, t_max=self.tmax)
+                if temp_opt.get_all() != options.get_all():
+                    print(f'Simulation {s} is corrupted. Exiting')
+                    sys.exit(-1)
+            self.options = options.get_all()
+            if print_flag:
+                options.print_settings()
+
         
