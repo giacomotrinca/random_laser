@@ -548,7 +548,7 @@ class DisorderAverage:
         return self.temperatures
     
     def CheckList(self, list_to_check):
-
+        check = False
         for i in range(len(list_to_check)):
             if list_to_check[i] == []:
                 check = False
@@ -607,5 +607,16 @@ class DisorderAverage:
         if self.CheckList(files_pt) == False and self.CheckList(files_dyn) == False:
             print("Data corrupted. Exiting.")
             sys.exit(-1)
+    
+    def Spectrum(self, rebinned_flag = True):
 
+        files_pt = self.GetFiles(f'mean_spectrum_PT', pt_flag=True)
+
+        if self.CheckList(files_pt):
+            mean_spectrum = []
+            count = 0
+            for parent in files_pt:
+                for file in parent:
+                    mean_spectrum.append(np.loadtxt(file, dtype=np.float64))
+                    count += 1
     
