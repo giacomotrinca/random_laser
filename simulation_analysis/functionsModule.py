@@ -481,7 +481,7 @@ class DisorderAverage:
             print('No Dyn data directories')
         else:
             print('Dyn directories: ', self.dyn_directories)
-            self.checkOptions(self.dyn_directories)
+            self.checkOptions(self.dyn_directories, print_flag=True)
         
     
     def checkOptions(self, strings, print_flag = False):
