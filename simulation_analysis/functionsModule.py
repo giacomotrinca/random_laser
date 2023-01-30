@@ -477,10 +477,8 @@ class DisorderAverage:
             print('Dyn directories: ', self.dyn_directories)
         
     
-    def checkOptions(self):
+    def checkOptions(string):
 
-        options_pt = [loadingModule.Settings(d-'/data'+'/analysis.info') for d in self.pt_directories]
-
-        options_dyn = [loadingModule.Settings(d-'/data'+'/analysis.info') for d in self.dyn_directories]
+        pass
             
         
