@@ -53,9 +53,11 @@ for dev in devices:
 
 #print(directories)     
 
-
+os.system(f'mkdir -p {size_path}/dis_ave')
 disorder = functionsModule.DisorderAverage(loadingModule.search_for_data_folder(size_path), t_min=t_min, t_max=t_max)
+disorder.SpecificHeat()
 
+os.system(f'mv *.dat {size_path}/dis_ave/')
 
 
 

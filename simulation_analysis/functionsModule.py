@@ -2,7 +2,7 @@ import numpy as np
 import sys
 import loadingModule 
 import concurrent.futures as multithreading
-
+import os
 
 
 class Analysis:
@@ -33,7 +33,8 @@ class Analysis:
     def GetTemperatures(self):
         step = (self.tmax - self.tmin)/self.npt
         self.temperatures = np.array([self.tmin + (i+1)* step for i in range(self.npt)], dtype = np.float64)
-    
+        return self.temperatures
+
     def print_temperatures(self):
         print(self.temperatures)
     
@@ -230,9 +231,9 @@ class Analysis:
         sigma /= self.size
         #print(np.shape(sigma))
         if self.find_PT():
-            filename = f'specific_heat_PT_sample{self.sample}.dat'
+            filename = f'specific_heat_PT_size{self.size}_sample{self.sample}.dat'
         else:
-            filename = f'specific_heat_NOPT_sample{self.sample}.dat'
+            filename = f'specific_heat_NOPT_size{self.size}_sample{self.sample}.dat'
 
         file_handle = open(filename, "w")
         for r in range(self.replicas):
@@ -481,7 +482,10 @@ class DisorderAverage:
             print('No Dyn data directories')
         else:
             print('Dyn directories: ', self.dyn_directories)
-            self.checkOptions(self.dyn_directories, print_flag=True)
+            self.checkOptions(self.dyn_directories)
+        
+        self.initOptions()
+
         
     
     def checkOptions(self, strings, print_flag = False):
@@ -507,4 +511,101 @@ class DisorderAverage:
             if print_flag:
                 options.print_settings()
 
+    def initOptions(self):
+        self.size = self.options[0]
+        self.replicas = self.options[1]
+        self.pt_rate= self.options[2]
+        self.iter = self.options[3] 
+        self.first= self.options[4] 
+        self.npt = self.options[5]
+        self.pt= self.options[6]
+        self.print_rate= self.options[7]
+    
+
+    def find_files(self, folder, search_string):
+        found_files = []
+        for root, dirs, files in os.walk(folder):
+            for file in files:
+                if search_string in file:
+                    found_files.append(os.path.join(root, file))
+        return found_files
+
+    def GetFiles(self, search_string, pt_flag = True):
+        files = []
+        if pt_flag:
+            search_dir = self.pt_directories
+        else:
+            search_dir = self.dyn_directories
+
+        for d in search_dir:
+            files.append(self.find_files(folder=d, search_string=search_string))
+
+        return files
+
+    def GetTemperatures(self):
+        step = (self.tmax - self.tmin)/self.npt
+        self.temperatures = np.array([self.tmin + (i+1)* step for i in range(self.npt)], dtype = np.float64)
+        return self.temperatures
+    
+    def CheckList(self, list_to_check):
+
+        for i in range(len(list_to_check)):
+            if list_to_check[i] == []:
+                check = False
+                break
+            else:
+                check = True
         
+        return check
+        
+
+
+    def SpecificHeat(self):
+
+        files_pt = self.GetFiles(f'specific_heat_PT', pt_flag=True)
+        if self.CheckList(files_pt):
+            specific_heat = []
+            count = 0
+            for parent in files_pt:
+                for file in parent:
+                    specific_heat.append(np.loadtxt(file, dtype=np.float64))
+                    count += 1
+            specific_heat = np.array(specific_heat, dtype=np.float64)
+            specific_heat = np.mean(specific_heat, axis=0)
+            specific_heat = np.reshape(specific_heat, newshape=(self.replicas, self.npt - 1, 4))
+        
+            specific_heat = np.mean(specific_heat, axis=0)
+            #print(np.shape(specific_heat))
+            filename = f'dis_ave_specific_heat_PT_size{self.size}.dat'
+            file_handle = open(filename, "w")
+            file_handle.write(f'#Specific Heat averaged over {count} samples.\n')
+            file_handle.write(f'#Temperature\tSpecific Heat\tError\n')
+            np.savetxt(file_handle, np.c_[specific_heat[:, 0], specific_heat[:, 1], specific_heat[:, 2]], delimiter="\t", newline="\n", fmt="%4e")
+            file_handle.close()
+
+        files_dyn = self.GetFiles(f'specific_heat_NOPT', pt_flag=False) 
+        if self.CheckList(files_dyn):
+            specific_heat = []
+            count = 0
+            for parent in files_dyn:
+                for file in parent:
+                    specific_heat.append(np.loadtxt(file, dtype=np.float64))
+                    count += 1
+            specific_heat = np.array(specific_heat, dtype=np.float64)
+            specific_heat = np.mean(specific_heat, axis=0)
+            specific_heat = np.reshape(specific_heat, newshape=(self.replicas, self.npt - 1, 4))
+        
+            specific_heat = np.mean(specific_heat, axis=0)
+            #print(np.shape(specific_heat))
+            filename = f'dis_ave_specific_heat_NOPT_size{self.size}.dat'
+            file_handle = open(filename, "w")
+            file_handle.write(f'#Specific Heat averaged over {count} samples.\n')
+            file_handle.write(f'#Temperature\tSpecific Heat\tError\n')
+            np.savetxt(file_handle, np.c_[specific_heat[:, 0], specific_heat[:, 1], specific_heat[:, 2]], delimiter="\t", newline="\n", fmt="%4e")
+            file_handle.close()
+        
+        if self.CheckList(files_pt) == False and self.CheckList(files_dyn) == False:
+            print("Data corrupted. Exiting.")
+            sys.exit(-1)
+
+    
