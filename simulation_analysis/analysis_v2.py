@@ -12,7 +12,8 @@ t_max = np.float64(sys.argv[3])    # Maximal Temperature
 size_path = f'N{N}'
 
 devices = loadingModule.GetDirectories(path = size_path)
-
+directories = []
+sim_directories = []
 for dev in devices:
     dev_path = size_path + f'/{dev}'
     simulations = loadingModule.GetDirectories(path = dev_path)
@@ -28,10 +29,10 @@ for dev in devices:
         options = loadingModule.Settings(simulation_path, t_min=t_min, t_max=t_max)
         
         full_samples_directories = [simulation_path + f'/{d}' for d in samples]
+        directories.append(full_samples_directories)
         count = 0
         for sample_path in tqdm(full_samples_directories, f'Processing {simulation_path}'):
             analysis = functionsModule.Analysis(path=sample_path, param=options.get_all(), sample = number_of_sample[count])        
-            #analysis.print_path()
             analysis.LoadWholeSampleFiles()
             #print(f'Loaded {sample_path}')
             analysis.GetFrequenciesFile()
@@ -46,14 +47,18 @@ for dev in devices:
             analysis.ComputeExpIFO()
             analysis.PrintDistributions(bins = 100)
             analysis.PrintOverlap()
-
-
             count += 1
         
         os.system(f'mv *.dat {simulation_path}/data')
 
-            
-        
+#print(directories)     
+
+
+disorder = functionsModule.DisorderAverage(loadingModule.search_for_data_folder(size_path))
+
+
+
+
 
 
         

@@ -300,13 +300,6 @@ class Analysis:
                 length *= 2
                 
             
-            
-        
-            
-
-            
-        
-
     def ComputeExpIFO(self):
         
         if self.find_PT():
@@ -462,11 +455,32 @@ def checkSamples(samples, path):
         print(f'Warning: No samples found.', file=sys.stderr)
         sys.exit(-1)
         
-    
+def find_PT(string):
+        if "PT" in string:
+            return True
+        else:
+            return False
 
 class DisorderAverage:
 
-    def __init__(self):
-        pass
+    def __init__(self, directories):
+        print(f'\n\nDisorder Average begins')
+        self.pt_directories = [d for d in directories if find_PT(d)]
+        self.dyn_directories = [d for d in directories if not find_PT(d)]
+        if self.pt_directories == []:
+            print('No PT data directories')
+        else:
+            print('PT directories: ', self.pt_directories)
+        if self.dyn_directories == []:
+            print('No Dyn data directories')
+        else:
+            print('Dyn directories: ', self.dyn_directories)
         
+    
+    def checkOptions(self):
+
+        options_pt = [loadingModule.Settings(d-'/data'+'/analysis.info') for d in self.pt_directories]
+
+        options_dyn = [loadingModule.Settings(d-'/data'+'/analysis.info') for d in self.dyn_directories]
+            
         

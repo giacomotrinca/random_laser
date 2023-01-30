@@ -56,6 +56,15 @@ def GetConfig(path):
 def GetDirectories(path):
     return [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d)) and d != "data"]
 
-
+def search_for_data_folder(path):
+    found = False
+    directories = []
+    for root, dirs, files in os.walk(path):
+        if "data" in dirs:
+            directories.append(os.path.join(root, 'data'))
+            found = True
+    if not found:
+        pass
+    return directories
 
  
