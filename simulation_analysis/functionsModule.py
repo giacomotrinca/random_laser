@@ -172,7 +172,7 @@ class Analysis:
                 length=1
                 for i in range(int(np.log2(len(self.spectrum[0, 0, :, 0])))):
                     self.mean_spectrum.append(np.mean(spectrum[:, :, index:index+length, :], axis=2))
-                    self.std_spectrum.append(self.SpectrumError(spectrum = spectrum[:, :, index:index+length, :], length=len(self.spectrum[0, 0])))
+                    self.std_spectrum.append(self.SpectrumError(spectrum = spectrum[:, :, index:index+length, :], length=length))
                     index += length
                     length *= 2
                 self.mean_spectrum = np.array(self.mean_spectrum, dtype=np.float64)
@@ -486,9 +486,10 @@ def find_PT(string):
 
 class DisorderAverage:
 
-    def __init__(self, directories, t_min, t_max):
+    def __init__(self, directories, t_min, t_max, bins):
         self.tmin = t_min
         self.tmax = t_max
+        self.bins = bins
         print(f'\n\n')
         print('---------------------------')
         print('| Disorder Average begins |')
@@ -542,6 +543,7 @@ class DisorderAverage:
         self.npt = self.options[5]
         self.pt= self.options[6]
         self.print_rate= self.options[7]
+        self.blocks = int(np.log2((self.iter-self.first)/self.print_rate))
     
 
     def find_files(self, folder, search_string):
@@ -630,6 +632,31 @@ class DisorderAverage:
             print("Data corrupted. Exiting.")
             sys.exit(-1)
     
+
+    def Rebin(self, spectrum):
+        freq = spectrum[:, 0]
+        intensity = spectrum[:, 1]
+        error = spectrum[:, 2]
+        temp = spectrum[0, 3]
+        
+        bin_size = 1./self.bins
+
+        x = np.linspace(bin_size, 1-bin_size, num=self.bins)
+        new_mat = []
+        for b in range(self.bins):
+            a = b * bin_size
+            c = (b+1) * bin_size
+            indices = np.where((freq >= a) & (freq < c))
+            if indices[0].shape[0] == 0:
+                continue
+            new_intensity = np.mean(intensity[indices])
+            new_error = np.mean(error[indices])
+            new_mat.append(np.array([x[b], new_intensity, new_error, temp]))
+        new_mat = np.array(new_mat, dtype=np.float64)
+        
+        return new_mat
+
+
     def Spectrum(self, rebinned_flag = True):
 
         files_pt = self.GetFiles(f'mean_spectrum_PT', pt_flag=True)
@@ -650,19 +677,138 @@ class DisorderAverage:
             mean_spectrum = np.reshape(mean_spectrum, newshape=(self.npt, 4, count * self.size))
             
             mean_spectrum = np.einsum('ijk -> ikj', mean_spectrum)
-            print(np.shape(mean_spectrum))
+            #print(np.shape(mean_spectrum))
             filename = f'dis_ave_mean_spectrum_PT_size{self.size}.dat'
             file_handle = open(filename, "w")
             file_handle.write(f'#Total Emission spectrum for {count} samples.\n')
             file_handle.write(f'#Frequency\tIntensity\tError\tTemperature\n')
+            if rebinned_flag:
+                    filename_rebin = f'dis_ave_mean_spectrum_rebinned_PT_size{self.size}.dat'
+                    file_handle_rebin = open(filename_rebin, "w")
+                    file_handle_rebin.write(f'#Total Emission spectrum for {count} samples.\n')
+                    file_handle_rebin.write(f'#Frequency\tIntensity\tError\tTemperature\n')
 
             for k in range(self.npt):
                 matrix = mean_spectrum[k]
                 sorted_indexes = np.argsort(matrix[:, 0])
                 sorted_matrix = matrix[sorted_indexes]
+                if rebinned_flag:
+                    rebinned_spectrum = self.Rebin(sorted_matrix)
+                    np.savetxt(file_handle_rebin, rebinned_spectrum, delimiter="\t", fmt="%4e", newline="\n")
+                    file_handle_rebin.write("\n\n")
                 np.savetxt(file_handle, sorted_matrix, delimiter="\t", fmt="%4e", newline="\n")
                 file_handle.write("\n\n")
             file_handle.close()
+            if rebinned_flag:
+                file_handle_rebin.close()
+        
+        files_dyn = self.GetFiles(f'mean_spectrum_block', pt_flag=False)
 
-          
-    
+        if self.CheckList(files_dyn):
+            #print(files_dyn)            
+
+            for b in range(self.blocks):
+                mean_spectrum = []
+                files_block = self.GetFiles(f'mean_spectrum_block{b}', pt_flag=False)
+                count = 0
+                for parent in files_block:
+                    for file in parent:
+                        temp_spectrum = np.loadtxt(file, dtype=np.float64)
+                        temp_spectrum = np.reshape(temp_spectrum, newshape=(self.npt, self.size, 4))
+                        mean_spectrum.append(temp_spectrum)
+                        count += 1
+                
+                mean_spectrum = np.array(mean_spectrum, dtype=np.float64)
+                mean_spectrum = np.array(mean_spectrum, dtype=np.float64)
+                mean_spectrum = np.einsum('ijkl -> jlki', mean_spectrum)
+
+            
+                mean_spectrum = np.reshape(mean_spectrum, newshape=(self.npt, 4, count * self.size))
+            
+                mean_spectrum = np.einsum('ijk -> ikj', mean_spectrum)
+                #print(np.shape(mean_spectrum))
+                filename = f'dis_ave_mean_spectrum_block{b}_size{self.size}.dat'
+                file_handle = open(filename, "w")
+                file_handle.write(f'#Total Emission spectrum for {count} samples.\n')
+                file_handle.write(f'#Frequency\tIntensity\tError\tTemperature\n')
+                if rebinned_flag:
+                    filename_rebin = f'dis_ave_mean_spectrum_rebinned_block{b}_size{self.size}.dat'
+                    file_handle_rebin = open(filename_rebin, "w")
+                    file_handle_rebin.write(f'#Rebinned Emission spectrum for {count} samples.\n')
+                    file_handle_rebin.write(f'#Frequency\tIntensity\tError\tTemperature\n')
+
+                for k in range(self.npt):
+                    matrix = mean_spectrum[k]
+                    sorted_indexes = np.argsort(matrix[:, 0])
+                    sorted_matrix = matrix[sorted_indexes]
+                    if rebinned_flag:
+                        rebinned_spectrum = self.Rebin(sorted_matrix)
+                        np.savetxt(file_handle_rebin, rebinned_spectrum, delimiter="\t", fmt="%4e", newline="\n")
+                        file_handle_rebin.write("\n\n")
+                    np.savetxt(file_handle, sorted_matrix, delimiter="\t", fmt="%4e", newline="\n")
+                    file_handle.write("\n\n")
+                file_handle.close()
+                if rebinned_flag:
+                    file_handle_rebin.close()
+                    
+    def Distribution(self, type):
+        
+        files_pt = self.GetFiles(f'{type}_PT', pt_flag=True)
+        
+        if self.CheckList(files_pt):
+            dist = []
+            count = 0
+            for parent in files_pt:
+                for file in parent:
+                    dist.append(np.loadtxt(file, dtype=np.float64))
+                    count += 1
+            dist = np.array(dist, dtype=np.float64)
+            error = np.std(dist, axis=0)/np.sqrt(count)
+            dist = np.mean(dist, axis=0)
+            dist = np.reshape(dist, newshape=(self.npt, self.bins, 3))
+            error = np.reshape(error, newshape=(self.npt, self.bins, 3))
+            
+            filename = f'dis_ave_{type}_PT_size{self.size}.dat'
+            file_handle = open(filename, "w")
+            file_handle.write(f'#{type} averaged over {count} samples.\n')
+            file_handle.write(f'#Bins\tDist\tError\tTemperature\n')
+            for k in range(self.npt):
+                np.savetxt(file_handle, np.c_[dist[k, :, 0], dist[k, :, 1], error[k, :, 1], np.full(shape = np.shape(dist[k, :, 0]), fill_value=dist[k, 0, 2])], delimiter="\t", newline="\n", fmt="%4e")
+                file_handle.write("\n\n")
+            file_handle.close()
+
+        files_dyn = self.GetFiles(f'{type}_block', pt_flag=False)
+        
+        if self.CheckList(files_dyn):
+            
+            if "ifo" in type:
+                start_block = 1
+            else:
+                start_block = 0
+            
+            blocks = [b for b in range(start_block, self.blocks)]
+            
+            for b in blocks:
+                dist = []
+                files_block = self.GetFiles(f'{type}_block{b}', pt_flag=False)
+                count = 0
+
+                for parent in files_block:
+                    for file in parent:
+                        dist.append(np.loadtxt(file, dtype=np.float64))
+                    count += 1
+                dist = np.array(dist, dtype=np.float64)
+                error = np.std(dist, axis=0)/np.sqrt(count)
+                dist = np.mean(dist, axis=0)
+                dist = np.reshape(dist, newshape=(self.npt, self.bins, 3))
+                error = np.reshape(error, newshape=(self.npt, self.bins, 3))
+            
+                filename = f'dis_ave_{type}_block{b}_size{self.size}.dat'
+                file_handle = open(filename, "w")
+                file_handle.write(f'#{type} averaged over {count} samples.\n')
+                file_handle.write(f'#Bins\tDist\tError\tTemperature\n')
+                for k in range(self.npt):
+                    np.savetxt(file_handle, np.c_[dist[k, :, 0], dist[k, :, 1], error[k, :, 1], np.full(shape = np.shape(dist[k, :, 0]), fill_value=dist[k, 0, 2])], delimiter="\t", newline="\n", fmt="%4e")
+                    file_handle.write("\n\n")
+                file_handle.close()
+

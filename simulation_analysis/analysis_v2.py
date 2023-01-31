@@ -58,9 +58,12 @@ else:
     print("Disorder average only mode.")
 
 os.system(f'mkdir -p {size_path}/dis_ave')
-disorder = functionsModule.DisorderAverage(loadingModule.search_for_data_folder(size_path), t_min=t_min, t_max=t_max)
+disorder = functionsModule.DisorderAverage(loadingModule.search_for_data_folder(size_path), t_min=t_min, t_max=t_max, bins=bins)
 disorder.SpecificHeat()
 disorder.Spectrum()
+disorder.Distribution(type='parisi_dist')
+disorder.Distribution(type='theo_ifo_dist')
+disorder.Distribution(type='exp_ifo_dist')
 os.system(f'mv *.dat {size_path}/dis_ave/')
 
 
