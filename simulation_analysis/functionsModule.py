@@ -129,23 +129,40 @@ class Analysis:
         del times
         del filename
         
-    
-    
+    def SpectrumError(self, spectrum, length):
+        temp_mean = np.mean(spectrum, axis = 2)
+        norm = np.sum(temp_mean, axis=0)
+        
+        temp_intensity = temp_mean/norm[np.newaxis, :, :]
+        #print(np.shape(temp_intensity))
+        temp_var = np.var(spectrum, axis = 2)/length
+        #print(np.shape(temp_var))
+
+        var = (temp_var/norm * (np.ones(shape=np.shape(temp_intensity)) - temp_intensity))**2
+        #print(np.shape(var))
+        sum = []
+        for k in range(len(temp_intensity)):
+            temp2_var = np.delete(temp_var, k, axis=0)
+            sum.append(np.sum(temp2_var**2, axis=0) * temp_intensity[k]**2 / (norm**2))
+        sum = np.array(sum, dtype=np.float64)
+        #print(np.shape(sum))
+        var += sum
+        return np.sqrt(var)
+
     def MakeSpectrum(self, mean_flag = True):
         
         self.spectrum = np.einsum("ijkl -> lijk", self.configurations[:, :, :, :, 0]**2 + self.configurations[:, :, :, :, 1]**2)
-        norm = np.sum(self.spectrum, axis=0)
+        #norm = np.sum(self.spectrum, axis=0)
         #self.spectrum = self.spectrum/norm[np.newaxis, :,:,:]
-        self.spectrum = self.spectrum/np.sqrt(self.temperatures[np.newaxis, np.newaxis, np.newaxis, :])
+        spectrum = self.spectrum/np.sqrt(self.temperatures[np.newaxis, np.newaxis, np.newaxis, :])
         #print(np.shape(self.spectrum))
         
         if self.find_PT():
             if mean_flag:
-                self.mean_spectrum = np.mean(self.spectrum, axis = 2)
+                self.mean_spectrum = np.mean(spectrum, axis = 2)
                 norm = np.sum(self.mean_spectrum, axis=0)
                 self.mean_spectrum /= norm[np.newaxis, :, :]
-                print(np.shape(self.mean_spectrum))
-                self.std_spectrum = np.std(self.spectrum, axis=2)/np.sqrt(len(self.spectrum[0, 0]))
+                self.std_spectrum =self.SpectrumError(spectrum = self.spectrum, length=len(self.spectrum[0, 0]))
                 #print(np.shape(self.std_spectrum))
         else:
             if mean_flag:
@@ -154,8 +171,8 @@ class Analysis:
                 index = 0
                 length=1
                 for i in range(int(np.log2(len(self.spectrum[0, 0, :, 0])))):
-                    self.mean_spectrum.append(np.mean(self.spectrum[:, :, index:index+length, :], axis=2))
-                    self.std_spectrum.append(np.std(self.spectrum[:, :, index:index+length, :], axis=2)/np.sqrt(length))
+                    self.mean_spectrum.append(np.mean(spectrum[:, :, index:index+length, :], axis=2))
+                    self.std_spectrum.append(self.SpectrumError(spectrum = spectrum[:, :, index:index+length, :], length=len(self.spectrum[0, 0])))
                     index += length
                     length *= 2
                 self.mean_spectrum = np.array(self.mean_spectrum, dtype=np.float64)
