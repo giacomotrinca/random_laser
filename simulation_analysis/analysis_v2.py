@@ -8,9 +8,11 @@ from tqdm import tqdm
 N = np.int32(sys.argv[1])          # Size of the system
 t_min = np.float64(sys.argv[2])    # Minimal Temperature
 t_max = np.float64(sys.argv[3])    # Maximal Temperature
+bins = np.int32(sys.argv[4])
+only_disorder = np.int32(sys.argv[5])
 # ------------------------------------######################
 size_path = f'N{N}'
-only_disorder = 1
+
 
 if only_disorder == 0:
     devices = loadingModule.GetDirectories(path = size_path)
@@ -47,17 +49,18 @@ if only_disorder == 0:
                 analysis.ComputeParisiOverlaps()
                 analysis.ComputeTheoIFO()
                 analysis.ComputeExpIFO()
-                analysis.PrintDistributions(bins = 100)
+                analysis.PrintDistributions(bins = bins)
                 analysis.PrintOverlap()
                 count += 1
         
             os.system(f'mv *.dat {simulation_path}/data')
-
+else:
+    print("Disorder average only mode.")
 
 os.system(f'mkdir -p {size_path}/dis_ave')
 disorder = functionsModule.DisorderAverage(loadingModule.search_for_data_folder(size_path), t_min=t_min, t_max=t_max)
 disorder.SpecificHeat()
-
+disorder.Spectrum()
 os.system(f'mv *.dat {size_path}/dis_ave/')
 
 

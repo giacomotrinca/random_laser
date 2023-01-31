@@ -129,19 +129,22 @@ class Analysis:
         del times
         del filename
         
-        
+    
     
     def MakeSpectrum(self, mean_flag = True):
         
         self.spectrum = np.einsum("ijkl -> lijk", self.configurations[:, :, :, :, 0]**2 + self.configurations[:, :, :, :, 1]**2)
         norm = np.sum(self.spectrum, axis=0)
-        self.spectrum = self.spectrum/norm[np.newaxis, :,:,:]
+        #self.spectrum = self.spectrum/norm[np.newaxis, :,:,:]
         self.spectrum = self.spectrum/np.sqrt(self.temperatures[np.newaxis, np.newaxis, np.newaxis, :])
         #print(np.shape(self.spectrum))
         
         if self.find_PT():
             if mean_flag:
                 self.mean_spectrum = np.mean(self.spectrum, axis = 2)
+                norm = np.sum(self.mean_spectrum, axis=0)
+                self.mean_spectrum /= norm[np.newaxis, :, :]
+                #print(np.shape(self.mean_spectrum))
                 self.std_spectrum = np.std(self.spectrum, axis=2)/np.sqrt(len(self.spectrum[0, 0]))
                 #print(np.shape(self.std_spectrum))
         else:
@@ -156,6 +159,8 @@ class Analysis:
                     index += length
                     length *= 2
                 self.mean_spectrum = np.array(self.mean_spectrum, dtype=np.float64)
+                norm = np.sum(self.mean_spectrum, axis = 1)
+                self.mean_spectrum /= norm[:, np.newaxis, :, :]
                 self.std_spectrum = np.array(self.std_spectrum, dtype=np.float64)
 
     
@@ -617,6 +622,30 @@ class DisorderAverage:
             count = 0
             for parent in files_pt:
                 for file in parent:
-                    mean_spectrum.append(np.loadtxt(file, dtype=np.float64))
+                    temp_spectrum = np.loadtxt(file, dtype=np.float64)
+                    temp_spectrum = np.reshape(temp_spectrum, newshape=(self.npt, self.size, 4))
+                    mean_spectrum.append(temp_spectrum)
                     count += 1
+            mean_spectrum = np.array(mean_spectrum, dtype=np.float64)
+            mean_spectrum = np.einsum('ijkl -> jlki', mean_spectrum)
+
+            
+            mean_spectrum = np.reshape(mean_spectrum, newshape=(self.npt, 4, count * self.size))
+            
+            mean_spectrum = np.einsum('ijk -> ikj', mean_spectrum)
+            print(np.shape(mean_spectrum))
+            filename = f'dis_ave_mean_spectrum_PT_size{self.size}.dat'
+            file_handle = open(filename, "w")
+            file_handle.write(f'#Total Emission spectrum for {count} samples.\n')
+            file_handle.write(f'#Frequency\tIntensity\tError\tTemperature\n')
+
+            for k in range(self.npt):
+                matrix = mean_spectrum[k]
+                sorted_indexes = np.argsort(matrix[:, 0])
+                sorted_matrix = matrix[sorted_indexes]
+                np.savetxt(file_handle, sorted_matrix, delimiter="\t", fmt="%4e", newline="\n")
+                file_handle.write("\n\n")
+            file_handle.close()
+
+          
     
