@@ -144,7 +144,7 @@ class Analysis:
                 self.mean_spectrum = np.mean(self.spectrum, axis = 2)
                 norm = np.sum(self.mean_spectrum, axis=0)
                 self.mean_spectrum /= norm[np.newaxis, :, :]
-                #print(np.shape(self.mean_spectrum))
+                print(np.shape(self.mean_spectrum))
                 self.std_spectrum = np.std(self.spectrum, axis=2)/np.sqrt(len(self.spectrum[0, 0]))
                 #print(np.shape(self.std_spectrum))
         else:
