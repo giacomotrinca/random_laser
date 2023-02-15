@@ -15,30 +15,36 @@ size_path = f'N{N}'
 
 
 if only_disorder == 0:
-    devices = loadingModule.GetDirectories(path = size_path)
+    devices = loadingModule.GetDirectories(path=size_path)
     directories = []
     sim_directories = []
     for dev in devices:
         dev_path = size_path + f'/{dev}'
-        simulations = loadingModule.GetDirectories(path = dev_path)
+        simulations = loadingModule.GetDirectories(path=dev_path)
 
         for simulation in simulations:
-        
+
             simulation_path = dev_path + f'/{simulation}'
-        
-            samples = loadingModule.GetDirectories(path = simulation_path)
+
+            samples = loadingModule.GetDirectories(path=simulation_path)
             number_of_sample = functionsModule.GetSampleIndex(samples)
             os.system(f'mkdir -p {simulation_path}/data')
             functionsModule.checkSamples(samples=samples, path=simulation_path)
-            options = loadingModule.Settings(simulation_path, t_min=t_min, t_max=t_max)
-        
-            full_samples_directories = [simulation_path + f'/{d}' for d in samples]
+            options = loadingModule.Settings(simulation_path,
+                                             t_min=t_min,
+                                             t_max=t_max)
+
+            full_samples_directories = [simulation_path + f'/{d}'
+                                        for d in samples]
             directories.append(full_samples_directories)
-            count = 0
-            for sample_path in tqdm(full_samples_directories, f'Processing {simulation_path}'):
-                analysis = functionsModule.Analysis(path=sample_path, param=options.get_all(), sample = number_of_sample[count])        
+            c = 0
+            for sample_path in tqdm(full_samples_directories,
+                                    f'Processing {simulation_path}'):
+                analysis = functionsModule.Analysis(path=sample_path,
+                                                    param=options.get_all(),
+                                                    sample=number_of_sample[c])
                 analysis.LoadWholeSampleFiles()
-                #print(f'Loaded {sample_path}')
+                # print(f'Loaded {sample_path}')
                 analysis.GetFrequenciesFile()
                 analysis.GetParallelTemperingFile()
                 analysis.GetTemperatures()
@@ -49,30 +55,22 @@ if only_disorder == 0:
                 analysis.ComputeParisiOverlaps()
                 analysis.ComputeTheoIFO()
                 analysis.ComputeExpIFO()
-                analysis.PrintDistributions(bins = bins)
+                analysis.PrintDistributions(bins=bins)
                 analysis.PrintOverlap()
-                count += 1
-        
+                c += 1
+
             os.system(f'mv *.dat {simulation_path}/data')
 else:
     print("Disorder average only mode.")
 
 os.system(f'mkdir -p {size_path}/dis_ave')
-disorder = functionsModule.DisorderAverage(loadingModule.search_for_data_folder(size_path), t_min=t_min, t_max=t_max, bins=bins)
+disorder = functionsModule.DisorderAverage(loadingModule.search(size_path),
+                                           t_min=t_min,
+                                           t_max=t_max,
+                                           bins=bins)
 disorder.SpecificHeat()
 disorder.Spectrum()
 disorder.Distribution(type='parisi_dist')
 disorder.Distribution(type='theo_ifo_dist')
 disorder.Distribution(type='exp_ifo_dist')
 os.system(f'mv *.dat {size_path}/dis_ave/')
-
-
-
-
-
-        
-
-
-
-
-

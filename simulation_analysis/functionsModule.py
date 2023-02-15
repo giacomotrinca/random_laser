@@ -1,15 +1,15 @@
 import numpy as np
 import sys
-import loadingModule 
-import concurrent.futures as multithreading
+import loadingModule
+# import concurrent.futures as multithreading
 import os
 
 
 class Analysis:
-    def __init__(self, param = None, path = None, sample = None):
+    def __init__(self, param=None, path=None, sample=None):
         if param and path:
             self.parameters = param
-            self.path=path
+            self.path = path
             self.size = param[0]
             self.replicas = param[1]
             self.pt_rate = param[2]
@@ -20,54 +20,64 @@ class Analysis:
             self.print_rate = param[7]
             self.tmin = param[8]
             self.tmax = param[9]
-            self.iterations = np.array([k for k in range(self.first, self.iters, self.print_rate)], dtype=np.int32)
+            self.iterations = np.array([k for k in range(self.first,
+                                                         self.iters,
+                                                         self.print_rate)],
+                                       dtype=np.int32)
             self.sample = sample
-            
+
         else:
             print(f'You have to initialize the analyzer!')
             sys.exit(-1)
-    
+
     def print_parameters(self):
         [print(p) for p in self.parameters]
-    
+
     def GetTemperatures(self):
         step = (self.tmax - self.tmin)/self.npt
-        self.temperatures = np.array([self.tmin + (i+1)* step for i in range(self.npt)], dtype = np.float64)
+        self.temperatures = np.array([self.tmin + (i+1) * step
+                                      for i in range(self.npt)],
+                                     dtype=np.float64)
         return self.temperatures
 
     def print_temperatures(self):
         print(self.temperatures)
-    
+
     def print_path(self):
         print(self.path)
-    
+
     def get_parameters(self):
         return np.array([p for p in self.parameters], dtype=np.float64)
-    
+
     def get_path(self):
         return self.path
-    
+
     def LoadWholeSampleFiles(self):
 
         configurations = []
         iters = [i for i in range(self.first, self.iters, self.print_rate)]
-        
+
         for replica in range(0, self.replicas):
             configuration_times = []
             for i in iters:
-                configuration_path = self.path + f'/config_nrep{replica}_iter_{i}.dat'
+                configuration_path = self.path + \
+                                     f'/config_nrep{replica}_iter_{i}.dat'
                 configuration_times.append(loadingModule.GetConfig(configuration_path))
             configurations.append(configuration_times)
-        configurations=np.array(configurations, dtype=np.float64)
-        configurations = np.reshape(configurations, newshape=(self.replicas, len(iters), self.npt, self.size, 2))
+        configurations = np.array(configurations, dtype=np.float64)
+        configurations = np.reshape(configurations, newshape=(self.replicas,
+                                                              len(iters),
+                                                              self.npt,
+                                                              self.size, 2))
 
         self.configurations = configurations
+
     def GetFrequenciesFile(self):
-        self.frequencies = np.loadtxt(f'{self.path}/frequencies.dat', dtype=np.float64)[:, 1]
+        self.frequencies = np.loadtxt(f'{self.path}/frequencies.dat',
+                                      dtype=np.float64)[:, 1]
 
     def print_frequencies(self):
         print(self.frequencies)
-        
 
     def print_config(self):
         print(self.configurations)
@@ -76,11 +86,12 @@ class Analysis:
         cols = np.arange(3, 3 * self.npt, 3)
         energy = []
         for replica in range(self.replicas):
-            parallel_tempering_path = self.path + f'/parallel_tempering{replica}.dat'
+            parallel_tempering_path = self.path + \
+                                      f'/parallel_tempering{replica}.dat'
             energy.append(np.loadtxt(parallel_tempering_path, usecols=cols))
         energy = np.array(energy, dtype=np.float64)
         self.energy = np.einsum("ijk->ikj", energy)
-        #print(np.shape(self.energy))
+        # print(np.shape(self.energy))
 
     def print_energy(self):
         print(np.shape(self.energy))

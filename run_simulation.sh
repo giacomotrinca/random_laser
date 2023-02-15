@@ -20,10 +20,10 @@ gsl_path=/usr/local/include/gsl #for my laptop
 #---------------------------------------------#
 #              Simulation settings            #
 #---------------------------------------------#
-Size=18
-t_min=0.40
-t_max=1.1
-number_of_PT_replicas=20
+Size=48
+t_min=0.45
+t_max=1.3
+number_of_PT_replicas=36
 number_of_real_replicas=10
 PT_flag=1
 number_of_PT_step=64
