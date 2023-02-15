@@ -104,7 +104,7 @@ class Analysis:
     
     def DumpEnergy(self):
         index = 0
-        length = 2
+        length = 1
         mean_energy = []
         std_energy = []
         times = []
