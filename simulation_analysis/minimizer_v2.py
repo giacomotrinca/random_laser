@@ -69,6 +69,14 @@ if momentum_flag == 0 or momentum_flag == 1:
             filename_loss = f'loss_alt_momentum_size{size}.dat'
             file_par = open(f'parameters_alt_momentum_size{size}.dat', "w")
             file = open(f'aux_dist_alt_momentum_size{size}.dat', "w")
+        elif model == 2:
+            filename_loss = f'loss_normInf_momentum_size{size}.dat'
+            file_par = open(f'parameters_normInf_momentum_size{size}.dat', "w")
+            file = open(f'aux_dist_normInf_momentum_size{size}.dat', "w")
+        elif model == 3:
+            filename_loss = f'loss_norm2_momentum_size{size}.dat'
+            file_par = open(f'parameters_norm2_momentum_size{size}.dat', "w")
+            file = open(f'aux_dist_norm2_momentum_size{size}.dat', "w")
     else:
         if model == 0:
             filename_loss = f'loss_size{size}.dat'
@@ -78,7 +86,16 @@ if momentum_flag == 0 or momentum_flag == 1:
             filename_loss = f'loss_alt_size{size}.dat'
             file_par = open(f'parameters_alt_size{size}.dat', "w")
             file = open(f'aux_dist_alt_size{size}.dat', "w")
+        elif model == 2:
+            filename_loss = f'loss_normInf_size{size}.dat'
+            file_par = open(f'parameters_normInf_size{size}.dat', "w")
+            file = open(f'aux_dist_normInf_size{size}.dat', "w")
+        elif model == 3:
+            filename_loss = f'loss_norm2_size{size}.dat'
+            file_par = open(f'parameters_norm2_size{size}.dat', "w")
+            file = open(f'aux_dist_norm2_size{size}.dat', "w")
     file_loss = open(filename_loss, "w")
+    #npt = 1
     for k in range(npt):
         minimizer = KL.Minimizer(pq=pq, pc=pc,
                                  phi=phi, c=overlap,
@@ -91,10 +108,10 @@ if momentum_flag == 0 or momentum_flag == 1:
 
         a, b, c, paux = minimizer.GD(epochs=100000,
                                      model=model,
-                                     learning_rate=0.01,
+                                     learning_rate=0.05,
                                      print_rate=1,
                                      momentum=momentum_bool,
-                                     tolerance=1e-5,
+                                     tolerance=1e-6,
                                      loss_file=file_loss)
         file_par.write(f'{temperatures[k]:.4e}\t{a:.4e}\t{b:.4e}\t{c:.4e}\n')
         file_loss.write("\n\n")

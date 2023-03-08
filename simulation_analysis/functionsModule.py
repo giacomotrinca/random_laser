@@ -64,20 +64,18 @@ class Analysis:
                                      f'/config_nrep{replica}_iter_{i}.dat'
                 configuration_times.append(loadingModule.GetConfig(configuration_path))
             configurations.append(configuration_times)
-        configurations = np.array(configurations, dtype=np.float64)
+        configurations=np.array(configurations, dtype=np.float64)
         configurations = np.reshape(configurations, newshape=(self.replicas,
                                                               len(iters),
-                                                              self.npt,
-                                                              self.size, 2))
+                                                              self.npt, self.size, 2))
 
         self.configurations = configurations
-
     def GetFrequenciesFile(self):
-        self.frequencies = np.loadtxt(f'{self.path}/frequencies.dat',
-                                      dtype=np.float64)[:, 1]
+        self.frequencies = np.loadtxt(f'{self.path}/frequencies.dat', dtype=np.float64)[:, 1]
 
     def print_frequencies(self):
         print(self.frequencies)
+        
 
     def print_config(self):
         print(self.configurations)
@@ -86,12 +84,11 @@ class Analysis:
         cols = np.arange(3, 3 * self.npt, 3)
         energy = []
         for replica in range(self.replicas):
-            parallel_tempering_path = self.path + \
-                                      f'/parallel_tempering{replica}.dat'
+            parallel_tempering_path = self.path + f'/parallel_tempering{replica}.dat'
             energy.append(np.loadtxt(parallel_tempering_path, usecols=cols))
         energy = np.array(energy, dtype=np.float64)
         self.energy = np.einsum("ijk->ikj", energy)
-        # print(np.shape(self.energy))
+        #print(np.shape(self.energy))
 
     def print_energy(self):
         print(np.shape(self.energy))
@@ -104,7 +101,7 @@ class Analysis:
     
     def DumpEnergy(self):
         index = 0
-        length = 1
+        length = 2
         mean_energy = []
         std_energy = []
         times = []
